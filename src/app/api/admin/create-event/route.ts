@@ -5,7 +5,7 @@ export async function POST() {
     const start = new Date()
     const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
 
-    const { data: event, error } = await supabase
+    const { data: event, error } = await (await supabase)
         .from('events')
         .insert({
             title: `四年に一度 ${start.getFullYear()}`,
