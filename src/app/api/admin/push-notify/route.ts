@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import webpush from 'web-push'
 
-webpush.setVapidDetails('mailto:admin@example.com', process.env.VAPID_PUBLIC_KEY!, process.env.VAPID_PRIVATE_KEY!)
+webpush.setVapidDetails('mailto:admin@example.com', process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!, process.env.VAPID_PRIVATE_KEY!)
 
 export async function POST() {
     const supabase = createClient()
-    const { data: subs } = await supabase.from('push_subscriptions').select('endpoint,p256dh,auth')
+    const { data: subs } = await (await supabase).from('push_subscriptions').select('endpoint,p256dh,auth')
     if (!subs?.length) return Response.json({ ok: true, count: 0 })
 
     const payload = JSON.stringify({ title: '四年に一度が始まった！', body: '24時間以内に撮影してください' })
