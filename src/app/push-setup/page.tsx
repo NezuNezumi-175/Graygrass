@@ -1,5 +1,8 @@
 'use client'
+import { createClient } from '@/lib/supabase/client';
 import { useState } from 'react';
+
+const supabase = createClient()
 
 export default function PushSetupPage() {
     const [status, setStatus] = useState('未設定')
@@ -25,12 +28,19 @@ export default function PushSetupPage() {
                 applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
             })
 
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) { setStatus('ログインしてください'); return }
+            const token = session.access_token
+
             const res = await fetch('/api/push-subscribe', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(sub),
             })
-            setStatus(res.ok ? '購読完了' : '購読失敗（サーバーエラーもしくはネットワークエラー）')
+            setStatus(res.ok ? '購読完了' : '購読失敗')
             alert('Push subscription ' + (res.ok ? 'succeeded' : 'failed'));
         } catch (e) {
             setStatus('エラー: ' + (e as Error).message)

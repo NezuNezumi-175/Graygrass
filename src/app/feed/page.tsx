@@ -1,7 +1,7 @@
-import { supabaseServer } from '@/lib/supabase-server'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function FeedPage() {
-    const supabase = supabaseServer()
+    const supabase = createClient()
     const nowIso = new Date().toISOString()
 
     const { data: event } = await supabase

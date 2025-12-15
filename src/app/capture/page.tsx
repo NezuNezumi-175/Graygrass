@@ -1,11 +1,11 @@
 'use client'
-import { supabaseBrowser } from '@/lib/supabase-client'
+import { createClient } from '@/lib/supabase/client'
 import { useState } from 'react'
 
 export default function CapturePage() {
     const [file, setFile] = useState<File | null>(null)
     const [loading, setLoading] = useState(false)
-    const supabase = supabaseBrowser()
+    const supabase = createClient()
 
     async function submit() {
         if (!file) return

@@ -1,10 +1,10 @@
-import { supabaseServer } from '@/lib/supabase-server'
+import { createClient } from '@/lib/supabase/server'
 import webpush from 'web-push'
 
 webpush.setVapidDetails('mailto:admin@example.com', process.env.VAPID_PUBLIC_KEY!, process.env.VAPID_PRIVATE_KEY!)
 
 export async function POST() {
-    const supabase = supabaseServer()
+    const supabase = createClient()
     const { data: subs } = await supabase.from('push_subscriptions').select('endpoint,p256dh,auth')
     if (!subs?.length) return Response.json({ ok: true, count: 0 })
 

@@ -1,7 +1,7 @@
-import { supabaseServer } from '@/lib/supabase-server'
+import { createClient } from '@/lib/supabase/server'
 
 export async function POST() {
-    const supabase = supabaseServer()
+    const supabase = createClient()
     const start = new Date()
     const end = new Date(start.getTime() + 24 * 60 * 60 * 1000)
 
