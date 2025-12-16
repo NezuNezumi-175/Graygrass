@@ -4,7 +4,7 @@ export default async function FeedPage() {
     const supabase = createClient()
     const nowIso = new Date().toISOString()
 
-    const { data: event } = await supabase
+    const { data: event } = await (await supabase)
         .from('events')
         .select('*')
         .lte('start_at', nowIso).gte('end_at', nowIso)
@@ -13,7 +13,7 @@ export default async function FeedPage() {
 
     if (!event) return <div className="p-6">イベント外です。次の通知をお待ちください。</div>
 
-    const { data: submissions } = await supabase
+    const { data: submissions } = await (await supabase)
         .from('submissions')
         .select('id, photo_url, created_at, user_id')
         .eq('event_id', event.id)

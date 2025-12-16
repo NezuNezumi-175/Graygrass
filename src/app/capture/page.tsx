@@ -12,14 +12,17 @@ export default function CapturePage() {
         setLoading(true)
 
         const { data: { user } } = await supabase.auth.getUser()
+        console.log('Current user:', user)
         if (!user) { setLoading(false); return alert('ログインしてください') }
 
         // サイズ制限（例：10MB）
         if (file.size > 10 * 1024 * 1024) { setLoading(false); return alert('ファイルサイズが大きすぎます') }
 
-        const path = `${user.id}/${Date.now()}_${file.name}`
+        const path = `${user.id}/${Date.now()}${file.name.substring(file.name.lastIndexOf('.'))}`
         const up = await supabase.storage.from('photos').upload(path, file, { contentType: file.type })
+        console.log('Upload result:', JSON.stringify(up.error) ?? null)
         if (up.error) { setLoading(false); return alert(up.error.message) }
+        console.log('File uploaded to path:', path)
 
         const { data: pub } = supabase.storage.from('photos').getPublicUrl(path)
         const res = await fetch('/api/submit', {
@@ -27,10 +30,17 @@ export default function CapturePage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ photoUrl: pub.publicUrl })
         })
-        const json = await res.json()
+        console.log('Submission response:', res)
+        let err
+        try {
+            err = (await res?.json())?.error
+        } catch (e) {
+            err = "何か知らんけど失敗したのかも？" + e
+            console.log(err)
+        }
 
         setLoading(false)
-        if (!json.ok) return alert(json.error ?? '投稿に失敗しました')
+        if (!res.ok) return alert(err ?? '投稿に失敗しました')
         location.href = '/feed'
     }
 
