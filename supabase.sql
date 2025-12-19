@@ -66,3 +66,12 @@ alter table push_subscriptions enable row level security;
 create policy "insert own push sub" on push_subscriptions for insert
 with
   check (auth.uid () = user_id);
+
+-- storage
+create policy "allow anyone insert storage" on storage.objects for insert
+with
+  check (true);
+
+create policy "allow anyone select storage" on storage.objects for
+select
+  using (true);
