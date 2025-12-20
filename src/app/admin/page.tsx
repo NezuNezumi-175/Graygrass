@@ -17,7 +17,7 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 text-center">
             <h2 className="text-xl font-bold">管理者ページ</h2>
             <button className="btn" onClick={createEvent}>イベント開始（24h）</button>
             <button className="btn" onClick={pushNotify}>Push通知送信</button>
