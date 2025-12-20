@@ -11,18 +11,21 @@ export default function Nav() {
   const isActive = (href: string) => pathname === href
 
   return (
-    <header className="fixed bottom-0 left-0 w-full border-t bg-white h-16 z-40">
-      <nav className="h-full flex items-center justify-between px-8">
+    <header className="fixed bottom-0 left-0 w-full h-20 z-40 pointer-events-none">
+      <nav className="relative w-full h-full">
 
-        {/* Feed（左寄り） */}
-        <Link href="/feed">
+        {/* Feed（★：左端寄り・少し上） */}
+        <Link href="/feed" className="pointer-events-auto">
           <div
             className={`
-              px-5 py-2 rounded-full font-extrabold transition ml-10
+              absolute left-30 bottom-6
+              w-30 h-30 flex items-center justify-center
+              rounded-full font-extrabold text-7xl
+              transition
               ${
                 isActive('/feed')
                   ? 'bg-red-400 text-yellow-400'
-                  : 'text-gray-400 hover:bg-gray-200'
+                  : 'text-gray-400 hover:bg-gray-200/60'
               }
             `}
           >
@@ -30,19 +33,22 @@ export default function Nav() {
           </div>
         </Link>
 
-        {/* Capture（右寄り） */}
-        <Link href="/capture">
+        {/* Capture（✚：右端寄り・少し上） */}
+        <Link href="/capture" className="pointer-events-auto">
           <div
             className={`
-              px-5 py-2 rounded-full font-extrabold transition -translate-x-10
+              absolute right-30 bottom-6
+              w-30 h-30 flex items-center justify-center
+              rounded-full font-extrabold text-6xl
+              transition
               ${
                 isActive('/capture')
                   ? 'bg-red-400 text-yellow-400'
-                  : 'text-gray-400 hover:bg-gray-200'
+                  : 'text-gray-400 hover:bg-gray-200/60'
               }
             `}
           >
-            Capture
+            ✚
           </div>
         </Link>
 
@@ -50,7 +56,6 @@ export default function Nav() {
     </header>
   )
 }
-
 
 /* 上ヘッダー */
 export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
@@ -103,7 +108,7 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
   )
 }
 
-/* 左サイドバー（★変更あり） */
+/* 左サイドバー */
 export function LeftSidebar({
   open,
   onClose,
@@ -136,7 +141,6 @@ export function LeftSidebar({
         <Link href="/mypage" className={itemClass('/mypage')} onClick={onClose}>MyPage</Link>
         <Link href="/push-setup" className={itemClass('/push-setup')} onClick={onClose}>Push Setup</Link>
         <Link href="/admin" className={itemClass('/admin')} onClick={onClose}>Admin</Link>
-
       </nav>
     </aside>
   )
