@@ -1,8 +1,9 @@
 'use client'
 
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 /* 下タブ（Feed / Capture） */
 export default function Nav() {
@@ -22,10 +23,9 @@ export default function Nav() {
               w-30 h-30 flex items-center justify-center
               rounded-full font-extrabold text-7xl
               transition
-              ${
-                isActive('/feed')
-                  ? 'bg-red-400 text-yellow-400'
-                  : 'text-gray-400 hover:bg-gray-200/60'
+              ${isActive('/feed')
+                ? 'bg-red-400 text-yellow-400'
+                : 'text-gray-400 hover:bg-gray-200/60'
               }
             `}
           >
@@ -41,10 +41,9 @@ export default function Nav() {
               w-30 h-30 flex items-center justify-center
               rounded-full font-extrabold text-6xl
               transition
-              ${
-                isActive('/capture')
-                  ? 'bg-red-400 text-yellow-400'
-                  : 'text-gray-400 hover:bg-gray-200/60'
+              ${isActive('/capture')
+                ? 'bg-red-400 text-yellow-400'
+                : 'text-gray-400 hover:bg-gray-200/60'
               }
             `}
           >
@@ -62,8 +61,21 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
   const router = useRouter()
   const pathname = usePathname()
   const [query, setQuery] = useState('')
+  const supabase = createClient()
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
   const isLoginPage = pathname === '/login'
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+      setUserAvatarUrl(data?.avatar_url || null);
+      setUserName(data?.name || null);
+    })()
+  }, [supabase])
 
   function handleSearch() {
     if (!query.trim()) return
@@ -73,14 +85,26 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
   return (
     <header className="fixed top-0 left-0 w-full h-14 bg-white flex items-center px-4 font-bold z-50">
       {!isLoginPage && (
-        <button onClick={onMenuClick} className="text-xl">
-          ☰
-        </button>
+        <>
+          <button onClick={onMenuClick} className="text-xl">
+            ☰
+          </button>
+          {userAvatarUrl &&
+            <div className="mx-4 flex items-center gap-2">
+              <img
+                className="w-8 h-8 rounded-full object-cover"
+                src={userAvatarUrl}
+                alt={userName || 'User avatar'}
+              />
+              <span className="text-sm font-semibold text-gray-700">{userName}</span>
+            </div>
+          }
+        </>
       )}
 
       <div className="absolute left-1/2 -translate-x-1/2">
         <Link href="/" className="text-lg tracking-wide">
-          4Real
+          4Real.
         </Link>
       </div>
 
@@ -120,11 +144,18 @@ export function LeftSidebar({
 
   const itemClass = (href: string) =>
     `block px-4 py-3 font-bold transition
-     ${
-       pathname === href
-         ? 'bg-red-400 text-yellow-400'
-         : 'text-gray-600 hover:bg-gray-200'
-     }`
+     ${pathname === href
+      ? 'bg-red-400 text-yellow-400'
+      : 'text-gray-600 hover:bg-gray-200'
+    }`
+
+  async function signOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    onClose()
+    window.location.href = '/locked'
+  }
+
 
   return (
     <aside
@@ -142,6 +173,7 @@ export function LeftSidebar({
         <Link href="/mypage" className={itemClass('/mypage')} onClick={onClose}>MyPage</Link>
         <Link href="/push-setup" className={itemClass('/push-setup')} onClick={onClose}>Push Setup</Link>
         <Link href="/admin" className={itemClass('/admin')} onClick={onClose}>Admin</Link>
+        <button onClick={signOut} className={itemClass('#')}>Logout</button>
       </nav>
     </aside>
   )
