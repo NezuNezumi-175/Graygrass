@@ -45,7 +45,7 @@ export default function CapturePage() {
     }
 
     return (
-        <div className="p-6 space-y-4">
+        <div className="pt-14 p-6 space-y-4">
             <input type="file" accept="image/*" capture="environment" onChange={e => setFile(e.target.files?.[0] ?? null)} />
             <button className="btn" disabled={!file || loading} onClick={submit}>{loading ? '投稿中...' : '投稿する'}</button>
         </div>
