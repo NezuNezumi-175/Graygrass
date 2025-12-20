@@ -1,30 +1,36 @@
 export const dynamic = 'force-dynamic'
 
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 
-export default async function UserPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+type Props = {
+  params: Promise<{ id: string }>
+}
+
+export default async function UserPage({ params }: Props) {
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user){
+  const id = (await params).id
+  const { data: user } = await supabase.from('profiles').select('*').eq('id', id).single()
+  const { data: { user: currentUser } } = await supabase.auth.getUser()
+  if (!user) {
     alert("なんじゃそのユーザー。ワイは知らへんで！")
+    return
+  }
+  if (!currentUser) {
+    alert("ログインせなあかんで！")
     return
   }
 
   const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single()
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single()
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold">My Page</h1>
+      <h1 className="text-xl font-bold">{user.name}</h1>
 
       {data ? (
         <>
@@ -44,12 +50,12 @@ export default async function UserPage({
       )}
 
       {/* ★ 常に表示（UX重視） */}
-      <Link
+      {(currentUser?.id === user.id) ? (<Link
         href="/mypage/edit"
         className="inline-block mt-6 text-blue-500"
       >
         プロフィールを編集する
-      </Link>
+      </Link>) : <></>}
     </div>
   )
 }

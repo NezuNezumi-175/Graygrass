@@ -1,13 +1,14 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function MyPageEdit() {
   const supabase = createClient()
   const router = useRouter()
 
+  const [name, setName] = useState('')
   const [bio, setBio] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(false)
@@ -23,10 +24,11 @@ export default function MyPageEdit() {
 
       const { data } = await supabase
         .from('profiles')
-        .select('bio')
+        .select('*')
         .eq('id', user.id)
         .single()
 
+      if (data?.name) setName(data.name)
       if (data?.bio) setBio(data.bio)
     }
     load()
@@ -64,6 +66,7 @@ export default function MyPageEdit() {
 
     await supabase.from('profiles').upsert({
       id: user.id,
+      name,
       bio,
       avatar_url,
       updated_at: new Date()
@@ -76,18 +79,25 @@ export default function MyPageEdit() {
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-xl font-bold">プロフィール編集</h1>
-
+      <h2>ユーザー名</h2>
+      <input
+        type="text"
+        className="w-full border p-2"
+        value={name || ''}
+        onChange={e => setName(e.target.value)}
+      />
+      <h2>アイコン画像</h2>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={e => setFile(e.target.files?.[0] ?? null)}
+      />
+      <h2>自己紹介文</h2>
       <textarea
         className="w-full border p-2"
         rows={5}
         value={bio}
         onChange={e => setBio(e.target.value)}
-      />
-
-      <input
-        type="file"
-        accept="image/*"
-        onChange={e => setFile(e.target.files?.[0] ?? null)}
       />
 
       <button
