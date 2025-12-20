@@ -1,7 +1,8 @@
 'use client'
 
 import { createClient } from "@/lib/supabase/client"
-import { useState } from "react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 import CommentBox from "./CommentBox"
 
 type Props = {
@@ -23,6 +24,18 @@ export default function SubmissionCard({ s }: Props) {
     supabase.from("comments").select("*").eq("post_id", s.id).then(({ data }) => {
         setComments(data || []);
     })
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        let mounted = true
+        const fetchUser = async () => {
+            console.log("Fetching user for", s);
+            const { data, error } = await supabase.from("profiles").select("*").eq("id", s.user_id).single()
+            if (!error && mounted) setUser(data)
+        }
+        fetchUser()
+        return () => { mounted = false }
+    }, [])
 
     // リアクション追加（/api/reactions POST に対応）
     const onReaction = async (submissionId: string, type: string) => {
@@ -71,7 +84,25 @@ export default function SubmissionCard({ s }: Props) {
                 <img src={url} alt="投稿" className="w-full aspect-square object-cover" />
             )}
             <figcaption className="p-2 text-sm space-y-2">
-                <div>{new Date(s.created_at).toLocaleString()}</div>
+                <div className="flex items-start gap-3 p-2">
+                    {/* avatar */}
+                    <Link href={`/user/${s.user_id}`}>
+                        <img
+                            src={user?.avatar_url ?? "/placeholder-avatar.png"}
+                            alt={user?.name ?? "avatar"}
+                            className="w-10 h-10 rounded-full object-cover"
+                            loading="lazy"
+                        />
+                    </Link>
+                    {/* content */}
+                    <div className="flex-1">
+                        {/* header: name left, date right */}
+                        <div className="flex justify-between items-start">
+                            <p className="text-sm font-medium text-gray-900">{user?.name ?? "Unknown"}</p>
+                            <span className="text-xs text-gray-500">{new Date(s.created_at).toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
 
                 {/* リアクション */}
                 <div className="flex items-center gap-2">
