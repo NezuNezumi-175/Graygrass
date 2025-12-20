@@ -12,13 +12,14 @@ type SubmissionProps = {
     photo_url: string
     created_at: string
     comments?: any[]
+    reactions?: { user_id: string }[]
   }
 }
 
 export default function SubmissionCard({ s }: SubmissionProps) {
   const supabase = createClient()
   const [user, setUser] = useState<any>(null)
-  const [likeCount, setLikeCount] = useState(0)
+  const [likeCount, setLikeCount] = useState(s.reactions?.length || 0)
   const [comments, setComments] = useState(s.comments || [])
   const [userId, setUserId] = useState<string | null>(null)
   const [commentInput, setCommentInput] = useState("")
@@ -43,13 +44,6 @@ export default function SubmissionCard({ s }: SubmissionProps) {
     return () => { mounted = false }
   }, [s.user_id])
 
-  // like count 取得
-  useEffect(() => {
-    supabase.from("reactions").select("*").eq("post_id", s.id).then(({ data }) => {
-      setLikeCount(data?.length || 0)
-    })
-  }, [s.id])
-
   // コメント取得
   useEffect(() => {
     supabase.from("comments").select("*").eq("post_id", s.id).then(({ data }) => {
@@ -57,7 +51,7 @@ export default function SubmissionCard({ s }: SubmissionProps) {
     })
   }, [s.id])
 
-  // リアクション追加
+  // リアクション追加/削除
   const onReaction = async (submissionId: string, type: string) => {
     if (!userId) return
     try {
@@ -70,7 +64,13 @@ export default function SubmissionCard({ s }: SubmissionProps) {
         console.error("Reaction POST failed:", await res.text())
         return
       }
-      setLikeCount(prev => prev + 1)
+
+      // optimistic update
+      setLikeCount(prev => {
+        const hasReacted = s.reactions?.some(r => r.user_id === userId)
+        return hasReacted ? Math.max(prev - 1, 0) : prev + 1
+      })
+
     } catch (err) {
       console.error("Reaction error:", err)
     }

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import SubmissionCard from '../../components/SubmissionCard'
 
-type SortType = 'newest' | 'oldest' | 'user_name' | 'random'
+type SortType = 'newest' | 'oldest' | 'user_name' | 'random'　| 'reactions'
 
 export default function FeedPage() {
   const [sortType, setSortType] = useState<SortType>('newest')
@@ -34,6 +34,8 @@ export default function FeedPage() {
         <SortButton label="古い順" active={sortType === 'oldest'} onClick={() => setSortType('oldest')} />
         <SortButton label="ユーザー名順" active={sortType === 'user_name'} onClick={() => setSortType('user_name')} />
         <SortButton label="ランダム" active={sortType === 'random'} onClick={() => setSortType('random')} />
+        <SortButton label="リアクション順" active={sortType === 'reactions'} onClick={() => setSortType('reactions')} />
+
       </div>
 
       {loading && <p>読み込み中...</p>}

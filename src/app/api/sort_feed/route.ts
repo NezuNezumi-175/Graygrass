@@ -11,7 +11,10 @@ type Submission = {
 async function getSortedSubmissions(eventId: string | null, sortType: SortType) {
   const supabase = await createClient()
 
-  let query = supabase.from('submissions').select('id, photo_url, created_at')
+  // submissions と reactions を結合してリアクション数を取得
+  let query = supabase
+    .from('submissions')
+    .select('id, photo_url, created_at, reactions(id)') // reactions 配列を取得
 
   if (eventId) {
     query = query.eq('event_id', eventId)
@@ -26,7 +29,7 @@ async function getSortedSubmissions(eventId: string | null, sortType: SortType) 
 
   let filtered = submissions || []
 
-  // ソート
+  // ソート処理
   switch (sortType) {
     case 'newest':
       filtered = filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -37,9 +40,11 @@ async function getSortedSubmissions(eventId: string | null, sortType: SortType) 
     case 'random':
       filtered = filtered.sort(() => Math.random() - 0.5)
       break
-    // user_name と reactions は未実装でも動くように空処理
-    case 'user_name':
     case 'reactions':
+      filtered = filtered.sort((a, b) => (b.reactions?.length || 0) - (a.reactions?.length || 0))
+      break
+    case 'user_name':
+      // 元の空処理のまま
       break
   }
 
@@ -48,6 +53,7 @@ async function getSortedSubmissions(eventId: string | null, sortType: SortType) 
 
   return filtered
 }
+
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
