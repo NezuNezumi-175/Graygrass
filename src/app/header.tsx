@@ -77,28 +77,13 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
             "
           />
 
-          <button
-            onClick={handleSearch}
-            className="
-              absolute
-              right-1
-              top-1/2
-              -translate-y-1/2
-              px-2 py-1
-              rounded-full
-              bg-gray-200
-              text-gray-700
-              text-xs
-              hover:bg-gray-300
-              transition
-            "
-          >
-            検索
+          <button onClick={handleSearch}
+            className="absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 rounded-full bg-gray-200 text-gray-700 text-xs hover:bg-gray-300 transition">
+              検索
           </button>
         </div>
       </div>
-
-    </header>
+</header>
   )
 }
 
@@ -108,24 +93,14 @@ export function LeftSidebar({ open }: { open: boolean }) {
 
   const itemClass = (href: string) =>
     `block px-4 py-3 font-bold transition
-     ${pathname === href
-       ? 'bg-red-400 text-yellow-400'
-       : 'text-gray-600 hover:bg-gray-200'
-     }`
+     ${pathname === href ? 'bg-red-400 text-yellow-400' : 'text-gray-600 hover:bg-gray-200'}`
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-screen w-48 bg-white border-r z-30
-      transform transition-transform duration-300
-      ${open ? 'translate-x-0' : '-translate-x-full'}`}
-    >
+      className={`fixed top-0 left-0 h-screen w-48 bg-white border-r z-30 transform transition-transform duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
       <nav className="pt-14 space-y-1">
-        <Link href="/push-setup" className={itemClass('/push-setup')}>
-          Push Setup
-        </Link>
-        <Link href="/admin" className={itemClass('/admin')}>
-          Admin
-        </Link>
+        <Link href="/push-setup" className={itemClass('/push-setup')}>Push Setup</Link>
+        <Link href="/admin" className={itemClass('/admin')}>Admin</Link>
       </nav>
     </aside>
   )
