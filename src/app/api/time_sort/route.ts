@@ -1,53 +1,41 @@
 import { createClient } from '@/lib/supabase/server'
 
-type Submission = {
-  id: string
-  photo_url: string
-  created_at: string
-}
-
-async function getRecentSubmissions(eventId: string | null) {
-  const supabase = await createClient()
-
-  let query = supabase.from('submissions').select('id, photo_url, created_at')
-
-  if (eventId) {
-    query = query.eq('event_id', eventId)
-  }
-
-  // 1年以内の投稿だけを対象
-  const oneYearAgo = new Date()
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
-  query = query.gte('created_at', oneYearAgo.toISOString())
-
-  const { data: submissions, error } = await query
-
-  if (error) {
-    console.error('[getRecentSubmissions] fetch error:', error)
-    return null
-  }
-
-  // 新しい順にソートして上位2件だけ
-  const recent = (submissions || [])
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 2)
-
-  return recent
-}
-
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
-  const eventId = searchParams.get('eventId') // optional
+  const period = searchParams.get('period') // '1year' or '4years'
+  const limit = parseInt(searchParams.get('limit') || '2', 10)
 
-  const submissions = await getRecentSubmissions(eventId)
+  const supabase = await createClient()
+  const now = new Date()
+  let gte: string
+  let lt: string | undefined
 
-  if (!submissions) {
-    return Response.json({ ok: false, error: 'Failed to fetch submissions' }, { status: 500 })
+  if (period === '1year') {
+    const oneYearAgo = new Date()
+    oneYearAgo.setFullYear(now.getFullYear() - 1)
+    gte = oneYearAgo.toISOString()
+  } else if (period === '4years') {
+    const fourYearsAgoStart = new Date()
+    fourYearsAgoStart.setFullYear(now.getFullYear() - 4)
+    const fourYearsAgoEnd = new Date()
+    fourYearsAgoEnd.setFullYear(now.getFullYear() - 3)
+    gte = fourYearsAgoStart.toISOString()
+    lt = fourYearsAgoEnd.toISOString()
+  } else {
+    return Response.json({ ok: false, error: 'invalid period' }, { status: 400 })
   }
 
-  return Response.json({
-    ok: true,
-    count: submissions.length,
-    submissions,
-  })
+  let query = supabase
+    .from('submissions')
+    .select('id, photo_url, created_at')
+    .gte('created_at', gte)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (lt) query = query.lt('created_at', lt)
+
+  const { data, error } = await query
+  if (error) return Response.json({ ok: false, error }, { status: 500 })
+
+  return Response.json({ ok: true, submissions: data })
 }

@@ -29,38 +29,20 @@ export default function Home() {
     }
   }, [supabase])
 
-  // 投稿取得
+  // 投稿取得（Route API 経由）
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true)
       try {
-        const now = new Date()
-        const oneYearAgo = new Date()
-        oneYearAgo.setFullYear(now.getFullYear() - 1)
-        const fourYearsAgoStart = new Date()
-        fourYearsAgoStart.setFullYear(now.getFullYear() - 4)
-        const fourYearsAgoEnd = new Date()
-        fourYearsAgoEnd.setFullYear(now.getFullYear() - 3)
+        const [oneYearRes, fourYearRes] = await Promise.all([
+          fetch('/api/time_sort?period=1year&limit=2'),
+          fetch('/api/time_sort?period=4years&limit=2'),
+        ])
+        const oneYearData = await oneYearRes.json()
+        const fourYearData = await fourYearRes.json()
 
-        // 1年以内
-        const { data: oneYearData } = await supabase
-          .from('submissions')
-          .select('id, photo_url, created_at')
-          .gte('created_at', oneYearAgo.toISOString())
-          .order('created_at', { ascending: false })
-          .limit(2)
-
-        // 4年前
-        const { data: fourYearData } = await supabase
-          .from('submissions')
-          .select('id, photo_url, created_at')
-          .gte('created_at', fourYearsAgoStart.toISOString())
-          .lt('created_at', fourYearsAgoEnd.toISOString())
-          .order('created_at', { ascending: false })
-          .limit(2)
-
-        setOneYearPosts(oneYearData ?? [])
-        setFourYearPosts(fourYearData ?? [])
+        setOneYearPosts(oneYearData.submissions ?? [])
+        setFourYearPosts(fourYearData.submissions ?? [])
       } catch (err) {
         console.error('Fetch posts error:', err)
       } finally {
@@ -69,14 +51,14 @@ export default function Home() {
     }
 
     fetchPosts()
-  }, [supabase])
+  }, [])
 
   async function signOut() {
     await supabase.auth.signOut()
     setUser(null)
   }
 
-  // 投稿表示用コンポーネント（画像 or 動画対応）
+  // 投稿表示コンポーネント（画像/動画対応）
   const MediaGrid = ({ posts }: { posts: Submission[] }) => (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       {posts.map(post => {
