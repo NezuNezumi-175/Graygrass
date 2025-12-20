@@ -68,7 +68,7 @@ async function getSortedSubmissions(eventId: string, sortType: SortType, mediaFi
     return filtered
 }
 
-export async function GET(req: Request) {
+export async function SortResult_GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const eventId = searchParams.get('eventId')
     const sortType = (searchParams.get('sort_type') as SortType) || 'newest'
