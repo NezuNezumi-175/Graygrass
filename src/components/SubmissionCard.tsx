@@ -14,11 +14,11 @@ export default function SubmissionCard({ s }: Props) {
     const isVideo = url?.endsWith('.mp4') || url?.endsWith('.mov') || url?.includes('video')
     const supabase = createClient()
     const [likeCount, setLikeCount] = useState(0);
-    supabase.from("reactions").select("*").eq("post_id", s.id).then(({ data }) => {
+    supabase.from("reactions").select("post_id").eq("post_id", s.id).then(({ data }) => {
         setLikeCount(data?.length || 0);
     })
     const [userId, setUserId] = useState<string | null>(null)
-    supabase.auth.getUser().then(({ data: { user } }) => setUserId(user?.id ?? null))
+    supabase.auth.getUser().then(({ data: { user: _user } }) => setUserId(_user?.id ?? null))
     const [commentInput, setCommentInput] = useState("");
     const [comments, setComments] = useState(s.comments || []);
     supabase.from("comments").select("*").eq("post_id", s.id).then(({ data }) => {
@@ -29,13 +29,15 @@ export default function SubmissionCard({ s }: Props) {
     useEffect(() => {
         let mounted = true
         const fetchUser = async () => {
-            console.log("Fetching user for", s);
+            console.log("eyyeey")
             const { data, error } = await supabase.from("profiles").select("*").eq("id", s.user_id).single()
+            if (error) console.error("Error fetching user:", error);
             if (!error && mounted) setUser(data)
+            console.log("Fetching user for", JSON.stringify(data));
         }
         fetchUser()
         return () => { mounted = false }
-    }, [])
+    }, [user ?? "hoge"])
 
     // リアクション追加（/api/reactions POST に対応）
     const onReaction = async (submissionId: string, type: string) => {
@@ -86,9 +88,9 @@ export default function SubmissionCard({ s }: Props) {
             <figcaption className="p-2 text-sm space-y-2">
                 <div className="flex items-start gap-3 p-2">
                     {/* avatar */}
-                    <Link href={`/user/${s.user_id}`}>
+                    <Link href={`/user/${user?.id}`}>
                         <img
-                            src={user?.avatar_url ?? "/placeholder-avatar.png"}
+                            src={user?.avatar_url}
                             alt={user?.name ?? "avatar"}
                             className="w-10 h-10 rounded-full object-cover"
                             loading="lazy"
@@ -99,7 +101,7 @@ export default function SubmissionCard({ s }: Props) {
                         {/* header: name left, date right */}
                         <div className="flex justify-between items-start">
                             <p className="text-sm font-medium text-gray-900">{user?.name ?? "Unknown"}</p>
-                            <span className="text-xs text-gray-500">{new Date(s.created_at).toLocaleString()}</span>
+                            <span className="text-xs text-gray-500">{user}{new Date(s.created_at).toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
