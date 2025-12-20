@@ -75,3 +75,37 @@ with
 create policy "allow anyone select storage" on storage.objects for
 select
   using (true);
+
+-- follows table
+-- pgcrypto の gen_random_uuid() を利用
+create extension if not exists "pgcrypto";
+
+-- follows テーブル作成
+create table if not exists public.follows (
+  id uuid primary key default gen_random_uuid(),
+  follow_id uuid not null references auth.users(id) on delete cascade,
+  follower_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  constraint follows_unique_pair unique (follow_id, follower_id)
+);
+
+-- RLS 有効化
+alter table public.follows enable row level security;
+
+-- 認証済みロールへ最小権限付与
+grant select, insert, delete on public.follows to authenticated;
+
+-- ポリシー: 自分が関係する行のみ参照可能（フォロー元またはフォロー先が自分）
+create policy "Select own follow rows" on public.follows
+  for select
+  using (follower_id = auth.uid() OR follow_id = auth.uid());
+
+-- ポリシー: 挿入は自分が follower_id である場合のみ許可（偽装禁止）
+create policy "Insert only as yourself" on public.follows
+  for insert
+  with check (follower_id = auth.uid());
+
+-- ポリシー: 削除はフォローした本人（follower）だけ許可
+create policy "Delete only by follower" on public.follows
+  for delete
+  using (follower_id = auth.uid());
