@@ -1,5 +1,4 @@
 'use client'
-import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import SubmissionCard from '../../components/SubmissionCard'
 
@@ -9,11 +8,7 @@ export default function FeedPage() {
   const [sortType, setSortType] = useState<SortType>('newest')
   const [submissions, setSubmissions] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
-  const [commentInputs, setCommentInputs] = useState<{ [key: string]: string }>({})
-  const supabase = createClient()
-  const [userId, setUserId] = useState<string | null>(null)
 
-  supabase.auth.getUser().then(({ data: { user } }) => setUserId(user?.id ?? null))
 
   // 投稿取得（sort_feed API そのまま）
   useEffect(() => {
@@ -32,65 +27,6 @@ export default function FeedPage() {
     fetchFeed()
   }, [sortType])
 
-  // ----------------------
-  // リアクション追加（/api/reactions POST に対応）
-  const handleReaction = async (submissionId: string, type: string) => {
-    try {
-      const res = await fetch('/api/reactions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reaction: type, user_id: userId, post_id: submissionId }),
-      })
-      if (!res.ok) {
-        console.error('Reaction POST failed:', await res.text())
-        return
-      }
-      // 楽観更新
-      setSubmissions(prev =>
-        prev.map(s =>
-          s.id === submissionId
-            ? { ...s, reactions: [...(s.reactions ?? []), { reaction: type, user_id: userId }] }
-            : s
-        )
-      )
-    } catch (err) {
-      console.error('Reaction error:', err)
-    }
-  }
-
-  // コメント送信（/api/comments POST に対応）
-  const handleCommentSubmit = async (submissionId: string) => {
-    const content = commentInputs[submissionId]
-    if (!content) return
-
-    try {
-      // alert(userId)
-      const res = await fetch('/api/comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, user_id: userId, post_id: submissionId }),
-      })
-      if (!res.ok) {
-        console.error('Comment POST failed:', await res.text())
-        return
-      }
-
-      // 楽観更新
-      setSubmissions(prev =>
-        prev.map(s =>
-          s.id === submissionId
-            ? { ...s, comments: [...(s.comments ?? []), { content, user_id: userId }] }
-            : s
-        )
-      )
-      setCommentInputs(prev => ({ ...prev, [submissionId]: '' }))
-    } catch (err) {
-      console.error('Comment submit error:', err)
-    }
-  }
-
-  // ----------------------
-  // 以下、既存 FeedPage の表示部分は変更なし
   return (
     <main className="p-6 space-y-4">
       <div className="flex gap-2 flex-wrap">
@@ -107,10 +43,6 @@ export default function FeedPage() {
           <SubmissionCard
             key={s.id}
             s={s}
-            commentValue={commentInputs[s.id] ?? ''}
-            onCommentChange={(id, value) => setCommentInputs(prev => ({ ...prev, [id]: value }))}
-            onCommentSubmit={handleCommentSubmit}
-            onReaction={handleReaction}
           />
         ))}
       </div>

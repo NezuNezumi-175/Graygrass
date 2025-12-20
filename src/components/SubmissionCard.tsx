@@ -5,13 +5,9 @@ import { useState } from "react"
 
 type Props = {
     s: any
-    commentValue: string
-    onCommentChange: (submissionId: string, value: string) => void
-    onCommentSubmit: (submissionId: string) => void
-    onReaction: (submissionId: string, type: string) => void
 }
 
-export default function SubmissionCard({ s, commentValue, onCommentChange, onCommentSubmit, onReaction }: Props) {
+export default function SubmissionCard({ s }: Props) {
     const url = s.photo_url
     const isVideo = url?.endsWith('.mp4') || url?.endsWith('.mov') || url?.includes('video')
     const supabase = createClient()
@@ -19,6 +15,48 @@ export default function SubmissionCard({ s, commentValue, onCommentChange, onCom
     supabase.from("reactions").select("*").eq("post_id", s.id).then(({ data }) => {
         setLikeCount(data?.length || 0);
     })
+    const [userId, setUserId] = useState<string | null>(null)
+    supabase.auth.getUser().then(({ data: { user } }) => setUserId(user?.id ?? null))
+    const [commentInput, setCommentInput] = useState("");
+
+    // リアクション追加（/api/reactions POST に対応）
+    const onReaction = async (submissionId: string, type: string) => {
+        try {
+            const res = await fetch('/api/reactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reaction: type, user_id: userId, post_id: submissionId }),
+            })
+            if (!res.ok) {
+                console.error('Reaction POST failed:', await res.text())
+                return
+            }
+        } catch (err) {
+            console.error('Reaction error:', err)
+        }
+    }
+
+    // コメント送信（/api/comments POST に対応）
+    const onCommentSubmit = async (submissionId: string) => {
+        if (!commentInput) return
+
+        try {
+            const res = await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: commentInput, user_id: userId, post_id: submissionId }),
+            })
+            if (!res.ok) {
+                console.error('Comment POST failed:', await res.text())
+                return
+            }
+
+            setCommentInput('');
+        } catch (err) {
+            console.error('Comment submit error:', err)
+        }
+    }
+
 
     return (
         <figure key={s.id} className="border rounded overflow-hidden">
@@ -51,8 +89,8 @@ export default function SubmissionCard({ s, commentValue, onCommentChange, onCom
                         <input
                             type="text"
                             placeholder="コメント..."
-                            value={commentValue}
-                            onChange={e => onCommentChange(s.id, e.target.value)}
+                            value={commentInput}
+                            onChange={e => setCommentInput(e.target.value)}
                             className="flex-1 border rounded px-1 text-sm"
                         />
                         <button
