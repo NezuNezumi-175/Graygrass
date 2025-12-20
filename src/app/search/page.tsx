@@ -6,6 +6,7 @@ interface UserResult {
   id: string
   email: string
   name: string
+  avatar_url: string | null
 }
 
 export default function SearchPage() {
@@ -41,9 +42,7 @@ export default function SearchPage() {
         「{query}」の検索結果
       </h2>
 
-      {loading && (
-        <div className="text-gray-500">検索中...</div>
-      )}
+      {loading && <div className="text-gray-500">検索中...</div>}
 
       {!loading && results.length === 0 && (
         <div className="text-gray-500 p-4 border rounded">
@@ -65,8 +64,20 @@ export default function SearchPage() {
             transition
           "
         >
-          <div className="flex justify-between items-start">
-            <div>
+          <div className="flex items-center gap-4">
+            {/* 👤 プロフィールアイコン */}
+            {user.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt={`${user.name} icon`}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gray-300" />
+            )}
+
+            {/* 📝 名前・メール */}
+            <div className="flex-1">
               <h2 className="text-base font-semibold text-gray-800 group-hover:underline">
                 {user.name}
               </h2>
@@ -74,6 +85,7 @@ export default function SearchPage() {
                 {user.email}
               </p>
             </div>
+
             <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
               ID: {user.id.substring(0, 8)}...
             </span>
