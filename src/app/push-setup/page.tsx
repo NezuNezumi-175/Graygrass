@@ -48,7 +48,7 @@ export default function PushSetupPage() {
     }
 
     return (
-        <div className="p-6 space-y-4">
+        <div className="pt-14 p-6 space-y-4">
             <button className="btn" onClick={setup}>通知を有効化</button>
             <p>{status}</p>
         </div>
