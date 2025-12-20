@@ -1,125 +1,69 @@
 import { createClient } from '@/lib/supabase/server'
-// ソートタイプの定義
+
 type SortType = 'newest' | 'oldest' | 'user_name' | 'random' | 'reactions'
 
-/**
- * フィードの投稿をサーバー側で並び替えて返す関数
- * @param eventId イベント ID
- * @param sortType ソート条件
- */
-async function getSortedSubmissions(eventId: string, sortType: SortType) {
-    const supabase = createClient()
+type Submission = {
+  id: string
+  photo_url: string
+  created_at: string
+}
 
-    let query = (await supabase)
-        .from('submissions')
-        .select('id, photo_url, created_at, user_id, profiles(id, name, email)')
-        .eq('event_id', eventId)
+async function getSortedSubmissions(eventId: string | null, sortType: SortType) {
+  const supabase = await createClient()
 
-    // ソート条件を適用
-    switch (sortType) {
-        case 'newest':
-            query = query.order('created_at', { ascending: false })
-            break
-        case 'oldest':
-            query = query.order('created_at', { ascending: true })
-            break
-        case 'user_name':
-            break
-        case 'random':
-            break
-        case 'reactions':
-            break
-        default:
-            query = query.order('created_at', { ascending: false })
-    }
+  let query = supabase.from('submissions').select('id, photo_url, created_at')
 
-    const { data: submissions, error } = await query
+  if (eventId) {
+    query = query.eq('event_id', eventId)
+  }
 
-    if (error) {
-        console.error('getSortedSubmissions error:', error)
-        return null
-    }
+  const { data: submissions, error } = await query
 
-    let filtered = submissions || []
+  if (error) {
+    console.error('[sort_feed] fetch error:', error)
+    return null
+  }
 
-    // ランダムソートをサーバー側で実行
-    if (sortType === 'random') {
-        return filtered.sort(() => Math.random() - 0.5)
-    }
-    // reaction_count ソートをサーバー側で実行
-    // reaction ソートをサーバー側で実行
-    else if (sortType === 'reactions') {
+  let filtered = submissions || []
 
-        const submissionIds = filtered.map(s => s.id)
+  // ソート
+  switch (sortType) {
+    case 'newest':
+      filtered = filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      break
+    case 'oldest':
+      filtered = filtered.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      break
+    case 'random':
+      filtered = filtered.sort(() => Math.random() - 0.5)
+      break
+    // user_name と reactions は未実装でも動くように空処理
+    case 'user_name':
+    case 'reactions':
+      break
+  }
 
-        if (submissionIds.length === 0) return filtered
+  console.log('[sort_feed] sortType:', sortType)
+  console.log('[sort_feed] submissions:', filtered.map(s => s.photo_url))
 
-        // reactions をまとめて取得（group 不使用）
-        const { data: reactions, error } = await (await supabase)
-            .from('reactions')
-            .select('be_reacted_id')
-            .in('be_reacted_id', submissionIds)
-
-        if (error) {
-            console.error('reaction fetch error:', error)
-            return filtered
-        }
-
-        // JS 側で集計
-        const reactionCountMap = new Map<string, number>()
-
-        for (const r of reactions ?? []) {
-            const id = r.be_reacted_id
-            reactionCountMap.set(id, (reactionCountMap.get(id) ?? 0) + 1)
-        }
-
-        // reaction_count を付与してソート
-        return filtered
-            .map(sub => ({
-                ...sub,
-                reaction_count: reactionCountMap.get(sub.id) ?? 0
-            }))
-            .sort((a, b) => b.reaction_count - a.reaction_count)
-    } else if (sortType === 'user_name') {
-        return filtered.sort((a, b) => {
-            const nameA = a.profiles?.[0]?.name ?? ''
-            const nameB = b.profiles?.[0]?.name ?? ''
-            return nameA.localeCompare(nameB, 'ja')
-        })
-    }
-
-
-    return filtered
+  return filtered
 }
 
 export async function GET(req: Request) {
-    const { searchParams } = new URL(req.url)
-    const eventId = searchParams.get('eventId')
-    const sortType = (searchParams.get('sort_type') as SortType) || 'newest'
+  const { searchParams } = new URL(req.url)
+  const eventId = searchParams.get('eventId') // optional
+  const sortType = (searchParams.get('sort_type') as SortType) || 'newest'
 
-    if (!eventId) {
-        return Response.json({ ok: false, error: 'eventId is required' }, { status: 400 })
-    }
+  const submissions = await getSortedSubmissions(eventId, sortType)
 
-    const validSortTypes: SortType[] = ['newest', 'oldest', 'user_name', 'random', 'reactions']
+  if (!submissions) {
+    return Response.json({ ok: false, error: 'Failed to fetch submissions' }, { status: 500 })
+  }
 
-    if (!validSortTypes.includes(sortType)) {
-        return Response.json(
-            { ok: false, error: `sort_type must be one of: ${validSortTypes.join(', ')}` },
-            { status: 400 }
-        )
-    }
-
-    const submissions = await getSortedSubmissions(eventId, sortType)
-
-    if (submissions === null) {
-        return Response.json({ ok: false, error: 'Failed to fetch submissions' }, { status: 500 })
-    }
-
-    return Response.json({
-        ok: true,
-        count: submissions.length,
-        sort_type: sortType,
-        submissions,
-    })
+  return Response.json({
+    ok: true,
+    count: submissions.length,
+    sort_type: sortType,
+    submissions,
+  })
 }
