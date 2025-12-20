@@ -85,7 +85,7 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
   }
 
   return (
-    <header className="fixed top-0 left-0 w-full h-14 bg-white flex items-center px-4 font-bold z-50">
+    <header className="fixed top-0 left-0 w-full h-14 bg-gray-200 flex items-center px-4 font-bold z-50">
       {!isLoginPage && (
         <>
           <button onClick={onMenuClick} className="text-xl">
@@ -104,23 +104,26 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
         </>
       )}
 
-      <div className="absolute left-1/2 -translate-x-1/2">
+      <div className="absolute left-1/2 -translate-x-1/2 z-30">
   <Link
-  href="/"
-  className="
-    text-2xl font-extrabold tracking-wide
-    px-2 py-1
-    hover:bg-black hover:text-white
-    transition
-  "
->
-  4Real.
-</Link>
+    href="/"
+    className="
+     text-2xl font-extrabold tracking-wide
+      px-4 py-1
+      bg-white
+      rounded-full
+      hover:bg-black hover:text-white
+      transition
+    "
+  >
+    4Real.
+  </Link>
 </div>
 
 
+
       {!isLoginPage && (
-        <div className="ml-auto">
+        <div className="ml-auto relative z-20 focus-within:z-40">
           <div className="relative w-[220px] border border-gray-300 rounded-full bg-white">
             <input
               type="text"
