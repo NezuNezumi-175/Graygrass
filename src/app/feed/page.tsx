@@ -1,7 +1,7 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
-import SubmissionCard from './SubmissionCard'
+import SubmissionCard from '../../components/SubmissionCard'
 
 type SortType = 'newest' | 'oldest' | 'user_name' | 'random'
 
