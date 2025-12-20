@@ -14,8 +14,11 @@ export default function ClientLayout({
     <>
       <TopHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-      {/* サイドバー（上に重なる） */}
-      <LeftSidebar open={sidebarOpen} />
+      {/* 左サイドバー */}
+      <LeftSidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)} // ★ 追加
+      />
 
       {/* オーバーレイ（クリックで閉じる） */}
       {sidebarOpen && (
@@ -25,7 +28,7 @@ export default function ClientLayout({
         />
       )}
 
-      {/* メイン（動かさない） */}
+      {/* メイン */}
       <main className="pt-14 pb-16 relative z-10">
         {children}
       </main>
