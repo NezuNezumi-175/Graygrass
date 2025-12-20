@@ -12,7 +12,7 @@ async function getSortedSubmissions(eventId: string, sortType: SortType) {
 
     let query = (await supabase)
         .from('submissions')
-        .select('id, photo_url, media_url, media_type, created_at, user_id, profiles(id, name, email)')
+        .select('id, photo_url, created_at, user_id, profiles(id, name, email)')
         .eq('event_id', eventId)
 
     // ソート条件を適用
@@ -92,7 +92,7 @@ async function getSortedSubmissions(eventId: string, sortType: SortType) {
     return filtered
 }
 
-export async function SortResult_GET(req: Request) {
+export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const eventId = searchParams.get('eventId')
     const sortType = (searchParams.get('sort_type') as SortType) || 'newest'
