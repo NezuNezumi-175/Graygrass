@@ -17,18 +17,28 @@ export default async function FeedPage() {
         .from('submissions')
         .select('id, photo_url, media_url, media_type, created_at, user_id')
         .eq('event_id', event.id)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
 
     return (
         <main className="grid grid-cols-2 md:grid-cols-3 gap-4 p-6">
-            {submissions?.map((s: any) => (
-                <figure key={s.id} className="rounded-lg overflow-hidden border">
-                    <img src={s.photo_url} alt="投稿" className="w-full aspect-square object-cover" />
-                    <figcaption className="p-2 text-sm">
-                        {new Date(s.created_at).toLocaleString()}
-                    </figcaption>
-                </figure>
-            ))}
+            {submissions?.map((s: any) => {
+                const url = s.media_url || s.photo_url
+                const type = s.media_type || ''
+                const isVideo = type.startsWith('video/')
+
+                return (
+                    <figure key={s.id} className="rounded-lg overflow-hidden border">
+                        {isVideo ? (
+                            <video src={url} controls className="w-full aspect-square object-cover bg-black" />
+                        ) : (
+                            <img src={url} alt="投稿" className="w-full aspect-square object-cover" />
+                        )}
+                        <figcaption className="p-2 text-sm">
+                            {new Date(s.created_at).toLocaleString()}
+                        </figcaption>
+                    </figure>
+                )
+            })}
         </main>
     )
 }
