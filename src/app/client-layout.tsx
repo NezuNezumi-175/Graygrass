@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LeftSidebar, TopHeader } from './header'
+import Nav, { LeftSidebar, TopHeader } from './header'
 
 export default function ClientLayout({
   children,
@@ -32,6 +32,7 @@ export default function ClientLayout({
       <main className="pt-14 pb-16 relative z-10">
         {children}
       </main>
+      <Nav />
     </>
   )
 }

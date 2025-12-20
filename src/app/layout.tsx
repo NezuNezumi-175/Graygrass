@@ -1,10 +1,9 @@
 import EnsureProfile from '@/components/EnsureProfile'
 import ClientLayout from './client-layout'
 import './globals.css'
-import Nav from './header'
 
 export const metadata = {
-  title: '4Real',
+  title: '4Real.',
   description: '4年に1度版BeReal.',
 }
 
@@ -18,7 +17,6 @@ export default function RootLayout({
       <body className="min-h-dvh">
         <EnsureProfile />
         <ClientLayout>{children}</ClientLayout>
-        <Nav />
       </body>
     </html>
   )
