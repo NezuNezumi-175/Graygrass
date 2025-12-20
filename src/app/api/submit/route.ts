@@ -5,8 +5,8 @@ export async function POST(req: Request) {
     const { data: { user } } = await (await supabase).auth.getUser()
     if (!user) return Response.json({ ok: false }, { status: 401 })
 
-    const { photoUrl } = await req.json()
-    if (!photoUrl) return Response.json({ ok: false, error: 'no photoUrl' }, { status: 400 })
+    const { mediaUrl, mediaType } = await req.json()
+    if (!mediaUrl) return Response.json({ ok: false, error: 'no mediaUrl' }, { status: 400 })
 
     const nowIso = new Date().toISOString()
     const { data: event } = await (await supabase)
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
     const { error } = await (await supabase)
         .from('submissions')
-        .upsert({ user_id: user.id, event_id: event.id, photo_url: photoUrl }, { onConflict: 'user_id,event_id' })
+        .upsert({ user_id: user.id, event_id: event.id, media_url: mediaUrl, media_type: mediaType }, { onConflict: 'user_id,event_id' })
 
     if (error) return Response.json({ ok: false, error: error.message }, { status: 400 })
     return Response.json({ ok: true })

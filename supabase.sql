@@ -66,3 +66,12 @@ alter table push_subscriptions enable row level security;
 create policy "insert own push sub" on push_subscriptions for insert
 with
   check (auth.uid () = user_id);
+
+-- 追加: メディア対応のためのカラム
+alter table if exists submissions
+  add column if not exists media_url text;
+
+alter table if exists submissions
+  add column if not exists media_type text;
+
+-- 既存の photo_url カラムを残しつつ media_url を優先して使う設計です。

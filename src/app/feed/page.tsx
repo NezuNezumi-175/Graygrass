@@ -15,7 +15,7 @@ export default async function FeedPage() {
 
     const { data: submissions } = await (await supabase)
         .from('submissions')
-        .select('id, photo_url, created_at, user_id')
+        .select('id, photo_url, media_url, media_type, created_at, user_id')
         .eq('event_id', event.id)
         .order('created_at', { ascending: true })
 

@@ -10,6 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="border-b p-4 flex gap-4">
           <Link href="/">Home</Link>
           <Link href="/feed">Feed</Link>
+          <Link href="/search">Search</Link>
           <Link href="/capture">Capture</Link>
           <Link href="/push-setup">Push Setup</Link>
           <Link href="/admin">Admin</Link>
