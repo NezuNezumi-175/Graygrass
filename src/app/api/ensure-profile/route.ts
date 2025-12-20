@@ -10,7 +10,7 @@ export async function POST() {
         .upsert({
             id: user.id,
             email: user.email ?? null,
-            name: (user.user_metadata as any)?.name ?? null,
+            // name: (user.user_metadata as any)?.name ?? null,
         }, { onConflict: 'id' })
 
     if (error) return Response.json({ ok: false, error: error.message }, { status: 500 })
