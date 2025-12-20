@@ -71,7 +71,7 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
   }
 
   return (
-    <header className="fixed top-0 left-0 w-full h-14 bg-white flex items-center px-4 font-bold z-50 relative">
+    <header className="fixed top-0 left-0 w-full h-14 bg-white flex items-center px-4 font-bold z-50">
       {!isLoginPage && (
         <button onClick={onMenuClick} className="text-xl">
           ☰
@@ -129,9 +129,10 @@ export function LeftSidebar({
   return (
     <aside
       className={`
-        fixed top-0 left-0 h-screen w-48 bg-white border-r z-30
+        fixed top-0 left-0 h-screen w-48 bg-white border-r z-40
         transform transition-transform duration-300
         ${open ? 'translate-x-0' : '-translate-x-full'}
+        overflow-y-auto
       `}
     >
       <nav className="pt-14 space-y-1">
@@ -143,5 +144,14 @@ export function LeftSidebar({
         <Link href="/admin" className={itemClass('/admin')} onClick={onClose}>Admin</Link>
       </nav>
     </aside>
+  )
+}
+
+/* メインコンテンツ例 */
+export function MainContent({ children }: { children: React.ReactNode }) {
+  return (
+    <main className="pt-14 pl-48 pb-20">
+      {children}
+    </main>
   )
 }
