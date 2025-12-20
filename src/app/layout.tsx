@@ -1,3 +1,4 @@
+import EnsureProfile from '@/components/EnsureProfile'
 import ClientLayout from './client-layout'
 import './globals.css'
 import Nav from './header'
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className="min-h-dvh">
+        <EnsureProfile />
         <ClientLayout>{children}</ClientLayout>
         <Nav />
       </body>
