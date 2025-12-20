@@ -1,4 +1,4 @@
--- profiles（auth.users と紐付け）
+5622-- profiles（auth.users と紐付け）
 create table if not exists profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text unique,
