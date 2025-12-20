@@ -28,7 +28,7 @@ export default function CapturePage() {
         const res = await fetch('/api/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ photoUrl: pub.publicUrl })
+            body: JSON.stringify({ mediaUrl: pub.publicUrl, mediaType: file.type })
         })
         console.log('Submission response:', res)
         let err
@@ -46,7 +46,7 @@ export default function CapturePage() {
 
     return (
         <div className="p-6 space-y-4">
-            <input type="file" accept="image/*" capture="environment" onChange={e => setFile(e.target.files?.[0] ?? null)} />
+            <input type="file" accept="image/*,video/*" capture="environment" onChange={e => setFile(e.target.files?.[0] ?? null)} />
             <button className="btn" disabled={!file || loading} onClick={submit}>{loading ? '投稿中...' : '投稿する'}</button>
         </div>
     )
