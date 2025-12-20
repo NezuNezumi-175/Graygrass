@@ -1,6 +1,7 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
+import SubmissionCard from './SubmissionCard'
 
 type SortType = 'newest' | 'oldest' | 'user_name' | 'random'
 
@@ -63,7 +64,7 @@ export default function FeedPage() {
     if (!content) return
 
     try {
-        // alert(userId)
+      // alert(userId)
       const res = await fetch('/api/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -102,57 +103,16 @@ export default function FeedPage() {
       {loading && <p>読み込み中...</p>}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {submissions.map(s => {
-          const url = s.photo_url
-          const isVideo = url?.endsWith('.mp4') || url?.endsWith('.mov') || url?.includes('video')
-
-          return (
-            <figure key={s.id} className="border rounded overflow-hidden">
-              {isVideo ? (
-                <video src={url} controls className="w-full aspect-square object-cover bg-black" />
-              ) : (
-                <img src={url} alt="投稿" className="w-full aspect-square object-cover" />
-              )}
-              <figcaption className="p-2 text-sm space-y-2">
-                <div>{new Date(s.created_at).toLocaleString()}</div>
-
-                {/* リアクション */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleReaction(s.id, 'like')}
-                    className="px-2 py-1 bg-blue-500 text-white rounded text-sm"
-                  >
-                    👍 {s.reactions?.length ?? 0}
-                  </button>
-                </div>
-
-                {/* コメント */}
-                <div className="space-y-1">
-                  {(s.comments ?? []).map((c: any, idx: number) => (
-                    <div key={idx} className="text-xs bg-gray-100 p-1 rounded">
-                      <span className="font-semibold">{c.user_id}</span>: {c.content}
-                    </div>
-                  ))}
-                  <div className="flex gap-1 mt-1">
-                    <input
-                      type="text"
-                      placeholder="コメント..."
-                      value={commentInputs[s.id] ?? ''}
-                      onChange={e => setCommentInputs(prev => ({ ...prev, [s.id]: e.target.value }))}
-                      className="flex-1 border rounded px-1 text-sm"
-                    />
-                    <button
-                      onClick={() => handleCommentSubmit(s.id)}
-                      className="px-2 bg-green-500 text-white rounded text-sm"
-                    >
-                      送信
-                    </button>
-                  </div>
-                </div>
-              </figcaption>
-            </figure>
-          )
-        })}
+        {submissions.map(s => (
+          <SubmissionCard
+            key={s.id}
+            s={s}
+            commentValue={commentInputs[s.id] ?? ''}
+            onCommentChange={(id, value) => setCommentInputs(prev => ({ ...prev, [id]: value }))}
+            onCommentSubmit={handleCommentSubmit}
+            onReaction={handleReaction}
+          />
+        ))}
       </div>
     </main>
   )
