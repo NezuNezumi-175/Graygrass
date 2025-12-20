@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 /* 下タブ（Feed / Capture） */
 export default function Nav() {
@@ -22,13 +23,81 @@ export default function Nav() {
   )
 }
 
-/* 上ヘッダー */
+/* 上ヘッダー（検索機能付き） */
 export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
+  const router = useRouter()
+  const [query, setQuery] = useState('')
+
+  function handleSearch() {
+    if (!query.trim()) return
+    router.push(`/search?q=${encodeURIComponent(query)}`)
+  }
+
   return (
-    <header className="fixed top-0 left-0 w-full h-14 bg-white flex items-center justify-between px-4 font-bold z-50">
-      <button onClick={onMenuClick} className="text-xl">☰</button>
-      <Link href="/">4Real</Link>
-      <div className="w-6" />
+    <header className="fixed top-0 left-0 w-full h-14 bg-white flex items-center px-4 font-bold z-50">
+      
+      {/* 左：メニューボタン */}
+      <button onClick={onMenuClick} className="text-xl mr-4">
+        ☰
+      </button>
+
+      {/* 中央：ロゴ */}
+      <div className="flex-1 flex justify-center">
+        <Link href="/">4Real</Link>
+      </div>
+
+      {/* 右：検索バー（ボタン内包） */}
+      <div className="ml-auto">
+        <div
+          className="
+            relative
+            w-[220px]
+            border border-gray-300
+            rounded-full
+            bg-white
+            focus-within:ring-1
+            focus-within:ring-gray-400
+          "
+        >
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            placeholder="ユーザー名を入力..."
+            className="
+              w-full
+              pl-3 pr-12
+              py-1
+              bg-transparent
+              text-sm
+              text-gray-800
+              placeholder-gray-400
+              focus:outline-none
+            "
+          />
+
+          <button
+            onClick={handleSearch}
+            className="
+              absolute
+              right-1
+              top-1/2
+              -translate-y-1/2
+              px-2 py-1
+              rounded-full
+              bg-gray-200
+              text-gray-700
+              text-xs
+              hover:bg-gray-300
+              transition
+            "
+          >
+            検索
+          </button>
+        </div>
+      </div>
+
     </header>
   )
 }

@@ -35,22 +35,6 @@ export default function Home() {
       <h2 className= "text-2xl font-bold">1年内の投稿</h2>
       <h2 className= "text-2xl font-bold">4年前の投稿</h2>
       <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
-      <p>aaa</p>
       <p>メールでログインして遊べます。</p>
 
       <div className="flex items-center gap-4">
