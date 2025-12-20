@@ -1,3 +1,4 @@
+import EnsureProfile from '@/components/EnsureProfile'
 import Link from 'next/link'
 import './globals.css'
 
@@ -7,6 +8,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja">
       <body className="min-h-dvh">
+        <EnsureProfile />
         <header className="border-b p-4 flex gap-4">
           <Link href="/">Home</Link>
           <Link href="/feed">Feed</Link>
