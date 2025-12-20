@@ -1,5 +1,8 @@
 'use client'
 
+import { createClient } from "@/lib/supabase/client"
+import { useState } from "react"
+
 type Props = {
     s: any
     commentValue: string
@@ -11,6 +14,11 @@ type Props = {
 export default function SubmissionCard({ s, commentValue, onCommentChange, onCommentSubmit, onReaction }: Props) {
     const url = s.photo_url
     const isVideo = url?.endsWith('.mp4') || url?.endsWith('.mov') || url?.includes('video')
+    const supabase = createClient()
+    const [likeCount, setLikeCount] = useState(0);
+    supabase.from("reactions").select("*").eq("post_id", s.id).then(({ data }) => {
+        setLikeCount(data?.length || 0);
+    })
 
     return (
         <figure key={s.id} className="border rounded overflow-hidden">
@@ -28,7 +36,7 @@ export default function SubmissionCard({ s, commentValue, onCommentChange, onCom
                         onClick={() => onReaction(s.id, 'like')}
                         className="px-2 py-1 bg-blue-500 text-white rounded text-sm"
                     >
-                        👍 {s.reactions?.length ?? 0}
+                        👍 {likeCount}
                     </button>
                 </div>
 
