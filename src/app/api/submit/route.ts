@@ -25,8 +25,10 @@ export async function POST(req: Request) {
     const { data: event, error: eventErr } = await (await supabase)
         .from('events')
         .select('*')
-        .lte('start_at', nowIso).gte('end_at', nowIso)
-        .limit(1).single()
+        .order('created_at', { ascending: false }) // 最新作成イベント順
+        .limit(1)
+        .single();
+
 
     if (eventErr) {
         console.error('submit: event query error', eventErr)

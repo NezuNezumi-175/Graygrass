@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const period = searchParams.get('period') // '1year' or '4years'
-  const limit = parseInt(searchParams.get('limit') || '2', 10)
+  const limit = parseInt(searchParams.get('limit') || '3', 10)
 
   const supabase = await createClient()
   const now = new Date()

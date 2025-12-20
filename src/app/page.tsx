@@ -25,7 +25,7 @@ export default function Home() {
     })
     return () => {
       mounted = false
-      try { sub.subscription.unsubscribe() } catch {}
+      try { sub.subscription.unsubscribe() } catch { }
     }
   }, [supabase])
 
@@ -83,48 +83,48 @@ export default function Home() {
 
   return (
     <div className="pt-14 p-6 space-y-6">
-      <h1 className="text-6xl font-bold">4Real ホーム</h1>
+      <div className="space-y-4 text-center">
+        <h1 className="text-6xl font-bold">4Real ホーム</h1>
 
-      {/* ユーザー情報 */}
-      <div className="flex items-center gap-4">
-        {user ? (
-          <div className="flex items-center gap-3">
-            <div className="text-sm">
-              <div className="font-semibold">{(user.user_metadata as any)?.name ?? user.email}</div>
-              <div className="text-gray-500">ログイン済み</div>
+        {/* ユーザー情報 */}
+        <div className="flex items-center gap-4 ">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="text-sm">
+                <div className="font-semibold">{(user.user_metadata as any)?.name ?? user.email}</div>
+                <div className="text-gray-500">ログイン済み</div>
+              </div>
+              <button className="btn" onClick={signOut}>ログアウト</button>
             </div>
-            <button className="btn" onClick={signOut}>ログアウト</button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <Link href="/login">ログイン</Link>
-            <Link href="/locked">ロック画面へ</Link>
-          </div>
-        )}
+          ) : (
+            <div className="flex gap-2">
+              <Link href="/login">ログイン</Link>
+              <Link href="/locked">ロック画面へ</Link>
+            </div>
+          )}
+        </div>
+        <h3 className="text-4xl font-bold">自分のトレンド</h3>
+        <h2 className="text-2xl font-bold">自分の投稿</h2>
+        <h2 className="text-2xl font-bold">フレンドの投稿</h2>
+        <h3 className="text-4xl font-bold">みんなのトレンド</h3>
+        <h2 className="text-2xl font-bold">今日/最近の投稿</h2>
+
+        {loading && <p>読み込み中...</p>}
+
+        {/* 1年以内の投稿 */}
+        <section>
+          <h2 className="text-2xl font-bold">1年以内の投稿</h2>
+          <MediaGrid posts={oneYearPosts} />
+        </section>
+
+        {/* 4年前の投稿 */}
+        <section>
+          <h2 className="text-2xl font-bold">4年前の投稿</h2>
+          <MediaGrid posts={fourYearPosts} />
+        </section>
+
+        <p>メールでログインして遊べます。</p>
       </div>
-
-      {/* 見出し部分 */}
-      <h3 className="text-4xl font-bold">自分のトレンド</h3>
-      <h2 className="text-2xl font-bold">自分の投稿</h2>
-      <h2 className="text-2xl font-bold">フレンドの投稿</h2>
-      <h3 className="text-4xl font-bold">みんなのトレンド</h3>
-      <h2 className="text-2xl font-bold">今日/最近の投稿</h2>
-
-      {loading && <p>読み込み中...</p>}
-
-      {/* 1年以内の投稿 */}
-      <section>
-        <h2 className="text-2xl font-bold">1年以内の投稿</h2>
-        <MediaGrid posts={oneYearPosts} />
-      </section>
-
-      {/* 4年前の投稿 */}
-      <section>
-        <h2 className="text-2xl font-bold">4年前の投稿</h2>
-        <MediaGrid posts={fourYearPosts} />
-      </section>
-
-      <p>メールでログインして遊べます。</p>
-    </div>
+    </div >
   )
 }
