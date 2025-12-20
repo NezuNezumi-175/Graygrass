@@ -1,4 +1,4 @@
--- profiles（auth.users と紐付け）
+5622-- profiles（auth.users と紐付け）
 create table if not exists profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text unique,
@@ -67,11 +67,11 @@ create policy "insert own push sub" on push_subscriptions for insert
 with
   check (auth.uid () = user_id);
 
--- 追加: メディア対応のためのカラム
-alter table if exists submissions
-  add column if not exists media_url text;
+-- storage
+create policy "allow anyone insert storage" on storage.objects for insert
+with
+  check (true);
 
-alter table if exists submissions
-  add column if not exists media_type text;
-
--- 既存の photo_url カラムを残しつつ media_url を優先して使う設計です。
+create policy "allow anyone select storage" on storage.objects for
+select
+  using (true);
