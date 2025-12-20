@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client"
 import { useState } from "react"
+import CommentBox from "./CommentBox"
 
 type Props = {
     s: any
@@ -18,6 +19,10 @@ export default function SubmissionCard({ s }: Props) {
     const [userId, setUserId] = useState<string | null>(null)
     supabase.auth.getUser().then(({ data: { user } }) => setUserId(user?.id ?? null))
     const [commentInput, setCommentInput] = useState("");
+    const [comments, setComments] = useState(s.comments || []);
+    supabase.from("comments").select("*").eq("post_id", s.id).then(({ data }) => {
+        setComments(data || []);
+    })
 
     // リアクション追加（/api/reactions POST に対応）
     const onReaction = async (submissionId: string, type: string) => {
@@ -80,10 +85,14 @@ export default function SubmissionCard({ s }: Props) {
 
                 {/* コメント */}
                 <div className="space-y-1">
-                    {(s.comments ?? []).map((c: any, idx: number) => (
-                        <div key={idx} className="text-xs bg-gray-100 p-1 rounded">
-                            <span className="font-semibold">{c.user_id}</span>: {c.content}
-                        </div>
+                    {(comments ?? []).map((data: {
+                        "id": string
+                        "user_id": string
+                        "post_id": string
+                        "content": string
+                        "created_at": string
+                    }) => (
+                        <CommentBox key={data?.id} {...data} />
                     ))}
                     <div className="flex gap-1 mt-1">
                         <input
