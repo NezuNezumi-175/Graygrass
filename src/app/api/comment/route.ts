@@ -1,10 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 
-export async function Follow(follow_id: string,follower_id: string) {
+export async function Comment(comment: string,follower_id: string) {
     const supabase = await createClient()
     const { data, error } = await supabase
-        .from('follows')
+        .from('comments')
         .insert([
-            { follow_id: follow_id, follower_id: follower_id }
+            { text: comment, follower_id: follower_id }
         ])
 }
