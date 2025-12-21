@@ -109,3 +109,10 @@ create policy "Insert only as yourself" on public.follows
 create policy "Delete only by follower" on public.follows
   for delete
   using (follower_id = auth.uid());
+
+
+-- authenticated user のみ insert 可能
+create policy "Allow insert for authenticated users"
+on reactions for insert
+using (auth.uid() = user_id);
+

@@ -1,6 +1,7 @@
 'use client'
+
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
 
 interface UserResult {
   id: string
@@ -18,15 +19,20 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!query.trim()) return
+    if (!query.trim()) {
+      setResults([])
+      return
+    }
 
     async function fetchUsers() {
       setLoading(true)
       try {
         const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`)
+        if (!res.ok) throw new Error('Failed to fetch')
         const data = await res.json()
         setResults(Array.isArray(data) ? data : [])
-      } catch {
+      } catch (err) {
+        console.error(err)
         setResults([])
       } finally {
         setLoading(false)
@@ -73,7 +79,11 @@ export default function SearchPage() {
                 className="w-12 h-12 rounded-full object-cover"
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-gray-300" />
+              <img
+                src="/placeholder-avatar.png"
+                alt="placeholder icon"
+                className="w-12 h-12 rounded-full object-cover"
+              />
             )}
 
             {/* 📝 名前・メール */}
@@ -81,9 +91,7 @@ export default function SearchPage() {
               <h2 className="text-base font-semibold text-gray-800 group-hover:underline">
                 {user.name}
               </h2>
-              <p className="text-gray-600 text-sm">
-                {user.email}
-              </p>
+              <p className="text-gray-600 text-sm">{user.email}</p>
             </div>
 
             <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">

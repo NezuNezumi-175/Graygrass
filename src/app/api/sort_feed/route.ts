@@ -4,21 +4,47 @@ type SortType = 'newest' | 'oldest' | 'user_name' | 'random' | 'reactions'
 
 type Submission = {
   id: string
+  user_id: string
   photo_url: string
   created_at: string
+  key?: string
 }
 
-async function getSortedSubmissions(eventId: string | null, sortType: SortType) {
+async function getSortedSubmissions(
+  userId: string | null,
+  eventId: string | null,
+  sortType: SortType,
+  filterFollowing: boolean
+): Promise<Submission[] | null> {
   const supabase = await createClient()
 
-  let query = supabase.from('submissions').select('id, photo_url, created_at')
+  let query = supabase
+    .from('submissions')
+    .select('id, user_id, photo_url, created_at, reactions(id)') // reactions 配列を取得
 
-  if (eventId) {
-    query = query.eq('event_id', eventId)
+  if (eventId) query = query.eq('event_id', eventId)
+
+  // フォロー中ユーザーのみ絞る
+  if (filterFollowing && userId) {
+    const { data: follows, error: followError } = await supabase
+      .from('follows')
+      .select('follow_id')
+      .eq('follower_id', userId)
+
+    if (followError) {
+      console.error('[sort_feed] follow fetch error:', followError)
+      return null
+    }
+
+    const followIds = follows?.map(f => f.follow_id) || []
+
+    // フォローしているユーザーがいなければ空配列
+    if (followIds.length === 0) return []
+
+    query = query.in('user_id', followIds)
   }
 
   const { data: submissions, error } = await query
-
   if (error) {
     console.error('[sort_feed] fetch error:', error)
     return null
@@ -26,7 +52,7 @@ async function getSortedSubmissions(eventId: string | null, sortType: SortType) 
 
   let filtered = submissions || []
 
-  // ソート
+  // ソート処理
   switch (sortType) {
     case 'newest':
       filtered = filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -37,24 +63,31 @@ async function getSortedSubmissions(eventId: string | null, sortType: SortType) 
     case 'random':
       filtered = filtered.sort(() => Math.random() - 0.5)
       break
-    // user_name と reactions は未実装でも動くように空処理
-    case 'user_name':
     case 'reactions':
+      filtered = filtered.sort((a, b) => (b.reactions?.length || 0) - (a.reactions?.length || 0))
+      break
+    case 'user_name':
+      // 名前順でソートしたい場合はここで追加可能
       break
   }
-
-  console.log('[sort_feed] sortType:', sortType)
-  console.log('[sort_feed] submissions:', filtered.map(s => s.photo_url))
 
   return filtered
 }
 
 export async function GET(req: Request) {
+  const supabase = await createClient()
   const { searchParams } = new URL(req.url)
-  const eventId = searchParams.get('eventId') // optional
-  const sortType = (searchParams.get('sort_type') as SortType) || 'newest'
 
-  const submissions = await getSortedSubmissions(eventId, sortType)
+  const eventId = searchParams.get('eventId')
+  const sortType = (searchParams.get('sort_type') as SortType) || 'newest'
+  const filterFollowing = searchParams.get('filter_following') === 'true' // ON/OFF スイッチ
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  const userId = user?.id ?? null
+
+  const submissions = await getSortedSubmissions(userId, eventId, sortType, filterFollowing)
 
   if (!submissions) {
     return Response.json({ ok: false, error: 'Failed to fetch submissions' }, { status: 500 })
@@ -64,6 +97,7 @@ export async function GET(req: Request) {
     ok: true,
     count: submissions.length,
     sort_type: sortType,
+    filter_following: filterFollowing,
     submissions,
   })
 }

@@ -15,7 +15,7 @@ export default function EnsureProfile() {
                 fetch('/api/ensure-profile', { method: 'POST' }).catch((e) => { alert(e.message) })
             }
         })
-
+        
         return () => {
             try {
                 listener?.subscription?.unsubscribe?.()
