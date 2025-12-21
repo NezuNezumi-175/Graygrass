@@ -16,7 +16,9 @@ export default function RootLayout({
     <html lang="ja">
       <body className="min-h-dvh">
         <EnsureProfile />
-        <ClientLayout>{children}</ClientLayout>
+        <ClientLayout>
+          {children}
+        </ClientLayout>
       </body>
     </html>
   )
