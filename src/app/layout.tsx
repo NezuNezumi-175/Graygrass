@@ -14,9 +14,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className="min-h-dvh">
+      <body className="min-h-dvh bg-white">
         <EnsureProfile />
-        <ClientLayout>{children}</ClientLayout>
+
+        <ClientLayout>
+          {/* 画面全体基準で「左寄り」 */}
+          <main className="flex justify-center px-4">
+            <div className="w-full transform md:-translate-x-24">
+              {children}
+            </div>
+          </main>
+        </ClientLayout>
+
       </body>
     </html>
   )
