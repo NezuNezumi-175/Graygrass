@@ -11,7 +11,7 @@ export async function POST(req: Request) {
       .eq('user_id', user_id)
       .eq('post_id', post_id)
       .eq('reaction', reaction)
-      .single()
+      .maybeSingle()
 
     if (data) {
       // すでにリアクションがある場合は削除

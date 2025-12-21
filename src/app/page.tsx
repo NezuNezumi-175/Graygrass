@@ -11,6 +11,7 @@ type Submission = {
 export default function Home() {
   const supabase = createClient()
   const [user, setUser] = useState<any>(null)
+  const [recentPosts, setRecentPosts] = useState<Submission[]>([])
   const [oneYearPosts, setOneYearPosts] = useState<Submission[]>([])
   const [fourYearPosts, setFourYearPosts] = useState<Submission[]>([])
   const [loading, setLoading] = useState(false)
@@ -33,13 +34,17 @@ export default function Home() {
     const fetchPosts = async () => {
       setLoading(true)
       try {
-        const [oneYearRes, fourYearRes] = await Promise.all([
-          fetch('/api/time_sort?period=1year&limit=2'),
-          fetch('/api/time_sort?period=4years&limit=2'),
+        const [recentRes, oneYearRes, fourYearRes] = await Promise.all([
+          fetch('/api/time_sort?period=recent&limit=3'),
+          fetch('/api/time_sort?period=1year&limit=3'),
+          fetch('/api/time_sort?period=4years&limit=3'),
         ])
+
+        const recentData = await recentRes.json()
         const oneYearData = await oneYearRes.json()
         const fourYearData = await fourYearRes.json()
 
+        setRecentPosts(recentData.submissions ?? [])
         setOneYearPosts(oneYearData.submissions ?? [])
         setFourYearPosts(fourYearData.submissions ?? [])
       } catch (err) {
@@ -86,8 +91,13 @@ export default function Home() {
         <h2 className="text-2xl font-bold">今日/最近の投稿</h2> */}
 
         {loading && <p>読み込み中...</p>}
+        {/* 最近の投稿 */}
+        <section>
+          <h2 className="text-2xl font-bold">最近の投稿</h2>
+          <MediaGrid posts={recentPosts} />
+        </section>
 
-        {/* 1年以内の投稿 */}
+        {/* 1年前の投稿 */}
         <section>
           <h2 className="text-2xl font-bold">1年以内の投稿</h2>
           <MediaGrid posts={oneYearPosts} />

@@ -5,23 +5,23 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import CommentBox from "./CommentBox"
 
-type SubmissionProps =
-    {
-        id: string
-        user_id: string
-        photo_url: string
-        created_at: string
-        comments?: any[]
-    }
-
+type SubmissionProps = {
+    id: string
+    user_id: string
+    photo_url: string
+    created_at: string
+    comments?: any[]
+    reactions?: { user_id: string }[]
+}
 
 export default function SubmissionCard(s: SubmissionProps) {
-    const supabase = createClient()
-    const [user, setUser] = useState<any>(null)
-    const [likeCount, setLikeCount] = useState(0)
-    const [comments, setComments] = useState(s?.comments || [])
-    const [userId, setUserId] = useState<string | null>(null)
-    const [commentInput, setCommentInput] = useState("")
+  const supabase = createClient()
+  const [user, setUser] = useState<any>(null)
+  const [likeCount, setLikeCount] = useState(s.reactions?.length || 0)
+  const [comments, setComments] = useState(s?.comments || [])
+  const [userId, setUserId] = useState<string | null>(null)
+  const [commentInput, setCommentInput] = useState("")
+
 
     const url = s?.photo_url
     const isVideo = url?.endsWith(".mp4") || url?.endsWith(".mov") || url?.includes("video")
@@ -74,7 +74,13 @@ export default function SubmissionCard(s: SubmissionProps) {
                 console.error("Reaction POST failed:", await res.text())
                 return
             }
-            setLikeCount(prev => prev + 1)
+            
+            // optimistic update
+            setLikeCount(prev => {
+              const hasReacted = s.reactions?.some(r => r.user_id === userId)
+              return hasReacted ? Math.max(prev - 1, 0) : prev + 1
+            })
+          
         } catch (err) {
             console.error("Reaction error:", err)
         }
