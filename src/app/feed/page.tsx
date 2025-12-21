@@ -42,7 +42,10 @@ export default function FeedPage() {
         {submissions.map(s => (
           <SubmissionCard
             key={s.id}
-            s={s}
+            id={s.id}
+            user_id={s.user_id}
+            photo_url={s.photo_url}
+            created_at={s.created_at}
           />
         ))}
       </div>

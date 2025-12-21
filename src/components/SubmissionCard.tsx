@@ -5,25 +5,25 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import CommentBox from "./CommentBox"
 
-type SubmissionProps = {
-    s: {
+type SubmissionProps =
+    {
         id: string
         user_id: string
         photo_url: string
         created_at: string
         comments?: any[]
     }
-}
 
-export default function SubmissionCard({ s }: SubmissionProps) {
+
+export default function SubmissionCard(s: SubmissionProps) {
     const supabase = createClient()
     const [user, setUser] = useState<any>(null)
     const [likeCount, setLikeCount] = useState(0)
-    const [comments, setComments] = useState(s.comments || [])
+    const [comments, setComments] = useState(s?.comments || [])
     const [userId, setUserId] = useState<string | null>(null)
     const [commentInput, setCommentInput] = useState("")
 
-    const url = s.photo_url
+    const url = s?.photo_url
     const isVideo = url?.endsWith(".mp4") || url?.endsWith(".mov") || url?.includes("video")
 
     // 現在ログイン中ユーザー取得
@@ -33,29 +33,33 @@ export default function SubmissionCard({ s }: SubmissionProps) {
 
     // 投稿の user 情報取得
     useEffect(() => {
-        if (!s.user_id) return
+        if (!s?.user_id) return; // user_id が未定義なら fetch しない
         let mounted = true
         const fetchUser = async () => {
-            const { data, error } = await supabase.from("profiles").select("*").eq("id", s.user_id).single()
-            if (!error && mounted) setUser(data)
+            try {
+                const { data, error } = await supabase.from("profiles").select("*").eq("id", s?.user_id).single()
+                if (!error && mounted) setUser(data)
+            } catch (err) {
+                console.error("User fetch error:", err)
+            }
         }
         fetchUser()
         return () => { mounted = false }
-    }, [s.user_id])
+    }, [s?.user_id])
 
     // like count 取得
     useEffect(() => {
-        supabase.from("reactions").select("*").eq("post_id", s.id).then(({ data }) => {
+        supabase.from("reactions").select("*").eq("post_id", s?.id).then(({ data }) => {
             setLikeCount(data?.length || 0)
         })
-    }, [s.id])
+    }, [s?.id])
 
     // コメント取得
     useEffect(() => {
-        supabase.from("comments").select("*").eq("post_id", s.id).then(({ data }) => {
+        supabase.from("comments").select("*").eq("post_id", s?.id).then(({ data }) => {
             setComments(data || [])
         })
-    }, [s.id])
+    }, [s?.id])
 
     // リアクション追加
     const onReaction = async (submissionId: string, type: string) => {
@@ -96,7 +100,7 @@ export default function SubmissionCard({ s }: SubmissionProps) {
     }
 
     return (
-        <figure key={s.id} className="border rounded overflow-hidden">
+        <figure key={s?.id} className="border rounded overflow-hidden">
             {isVideo ? (
                 <video src={url} controls className="w-full aspect-square object-cover bg-black" />
             ) : (
@@ -118,7 +122,7 @@ export default function SubmissionCard({ s }: SubmissionProps) {
                         {/* header: name left, date right */}
                         <div className="flex justify-between items-start">
                             <p className="text-sm font-medium text-gray-900">{user?.name ?? "Unknown"}</p>
-                            <span className="text-xs text-gray-500">{user}{new Date(s.created_at).toLocaleString()}</span>
+                            <span className="text-xs text-gray-500">{new Date(s?.created_at).toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -126,7 +130,7 @@ export default function SubmissionCard({ s }: SubmissionProps) {
                 {/* リアクション */}
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => onReaction(s.id, "like")}
+                        onClick={() => onReaction(s?.id, "like")}
                         className="px-2 py-1 bg-blue-500 text-white rounded text-sm"
                     >
                         👍 {likeCount}
@@ -147,7 +151,7 @@ export default function SubmissionCard({ s }: SubmissionProps) {
                             className="flex-1 border rounded px-1 text-sm"
                         />
                         <button
-                            onClick={() => onCommentSubmit(s.id)}
+                            onClick={() => onCommentSubmit(s?.id)}
                             className="px-2 bg-green-500 text-white rounded text-sm"
                         >
                             送信
