@@ -12,6 +12,8 @@ type SubmissionProps = {
     created_at: string
     comments?: any[]
     reactions?: { user_id: string }[]
+    isFollowing?: boolean
+    onFollowChange?: (userId: string, isFollowing: boolean) => void
 }
 
 export default function SubmissionCard(s: SubmissionProps) {
@@ -22,10 +24,15 @@ export default function SubmissionCard(s: SubmissionProps) {
     const [userId, setUserId] = useState<string | null>(null)
     const [commentInput, setCommentInput] = useState("")
     const [doYouLike, setDoYouLike] = useState(false)
-
+    const [isFollowing, setIsFollowing] = useState<boolean>(false)
 
     const url = s?.photo_url
     const isVideo = url?.endsWith(".mp4") || url?.endsWith(".mov") || url?.includes("video")
+
+    // FeedPage から渡された isFollowing を反映
+    useEffect(() => {
+        setIsFollowing(s.isFollowing || false)
+    }, [s.isFollowing])
 
     // 現在ログイン中ユーザー取得
     useEffect(() => {
@@ -34,7 +41,7 @@ export default function SubmissionCard(s: SubmissionProps) {
 
     // 投稿の user 情報取得
     useEffect(() => {
-        if (!s?.user_id) return; // user_id が未定義なら fetch しない
+        if (!s?.user_id) return;
         let mounted = true
         const fetchUser = async () => {
             try {
@@ -63,9 +70,7 @@ export default function SubmissionCard(s: SubmissionProps) {
             .select("*")
             .eq("post_id", s?.id)
             .eq("user_id", userId)
-            .then(({ data }) => {
-                setDoYouLike((data && data.length > 0) || false)
-            })
+            .then(({ data }) => setDoYouLike((data && data.length > 0) || false))
     }, [s?.id, userId])
 
     // コメント取得
@@ -84,20 +89,12 @@ export default function SubmissionCard(s: SubmissionProps) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ reaction: type, user_id: userId, post_id: submissionId }),
             })
-            if (!res.ok) {
-                console.error("Reaction POST failed:", await res.text())
-                return
-            }
-
-            if (doYouLike) {
-                setLikeCount(prev => Math.max(prev - 1, 0))
-            } else {
-                setLikeCount(prev => prev + 1)
-            }
+            if (!res.ok) return
+            if (doYouLike) setLikeCount(prev => Math.max(prev - 1, 0))
+            else setLikeCount(prev => prev + 1)
             setDoYouLike(prev => !prev)
-
         } catch (err) {
-            console.error("Reaction error:", err)
+            console.error(err)
         }
     }
 
@@ -111,12 +108,44 @@ export default function SubmissionCard(s: SubmissionProps) {
                 body: JSON.stringify({ content: commentInput, user_id: userId, post_id: submissionId }),
             })
             const json = await res.json()
-            if (!json.ok) return console.error("Comment POST failed")
-
+            if (!json.ok) return
             setCommentInput("")
             setComments(prev => [...prev, { ...json.comment, user: json.user }])
         } catch (err) {
-            console.error("Comment submit error:", err)
+            console.error(err)
+        }
+    }
+
+    // フォロー処理
+    const handleFollow = async () => {
+        if (!userId) return
+        try {
+            const res = await fetch("/api/follow", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ follow_id: s.user_id, follower_id: userId })
+            })
+            if (!res.ok) throw new Error("フォロー失敗")
+            setIsFollowing(true)
+            s.onFollowChange?.(s.user_id, true)
+        } catch (err) {
+            console.error(err)
+        }
+    }
+
+    const handleUnfollow = async () => {
+        if (!userId) return
+        try {
+            const res = await fetch("/api/unfollow", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ follow_id: s.user_id, follower_id: userId })
+            })
+            if (!res.ok) throw new Error("アンフォロー失敗")
+            setIsFollowing(false)
+            s.onFollowChange?.(s.user_id, false)
+        } catch (err) {
+            console.error(err)
         }
     }
 
@@ -129,18 +158,10 @@ export default function SubmissionCard(s: SubmissionProps) {
             )}
             <figcaption className="p-2 text-sm space-y-2">
                 <div className="flex items-start gap-3 p-2">
-                    {/* avatar */}
                     <Link href={`/user/${user?.id}`}>
-                        <img
-                            src={user?.avatar_url}
-                            alt={user?.name ?? "avatar"}
-                            className="w-10 h-10 rounded-full object-cover"
-                            loading="lazy"
-                        />
+                        <img src={user?.avatar_url} alt={user?.name ?? "avatar"} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
                     </Link>
-                    {/* content */}
                     <div className="flex-1">
-                        {/* header: name left, date right */}
                         <div className="flex justify-between items-start">
                             <p className="text-sm font-medium text-gray-900">{user?.name ?? "Unknown"}</p>
                             <span className="text-xs text-gray-500">{new Date(s?.created_at).toLocaleString()}</span>
@@ -148,13 +169,20 @@ export default function SubmissionCard(s: SubmissionProps) {
                     </div>
                 </div>
 
-                {/* リアクション */}
+                {/* リアクション + フォロー */}
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => onReaction(s?.id, "like")}
                         className="px-2 py-1 bg-blue-500 text-white rounded text-sm"
                     >
                         👍 {likeCount}
+                    </button>
+
+                    <button
+                        onClick={isFollowing ? handleUnfollow : handleFollow}
+                        className={`px-2 py-1 rounded text-sm ${isFollowing ? 'bg-gray-300 text-black' : 'bg-green-500 text-white'}`}
+                    >
+                        {isFollowing ? "フォロー中" : "フォロー"}
                     </button>
                 </div>
 
