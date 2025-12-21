@@ -1,4 +1,5 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import SubmissionCard from '../../components/SubmissionCard'
 import { createClient } from '@/lib/supabase/client'
@@ -56,8 +57,9 @@ export default function FeedPage() {
   }
 
   return (
-    <main className="p-6 space-y-4">
-      <div className="flex gap-2 flex-wrap items-center">
+    <main className="p-6 space-y-4 bg-gray-50 min-h-screen">
+      {/* ソートボタン & フォロー中のみ表示トグル */}
+      <div className="flex gap-2 flex-wrap items-center bg-gray-100 p-3 rounded-lg">
         <SortButton label="新しい順" active={sortType === 'newest'} onClick={() => setSortType('newest')} />
         <SortButton label="古い順" active={sortType === 'oldest'} onClick={() => setSortType('oldest')} />
         <SortButton label="ユーザー名順" active={sortType === 'user_name'} onClick={() => setSortType('user_name')} />
@@ -70,13 +72,13 @@ export default function FeedPage() {
             type="checkbox"
             checked={filterFollowing}
             onChange={e => setFilterFollowing(e.target.checked)}
-            className="w-4 h-4"
+            className="w-4 h-4 accent-gray-400"
           />
           フォロー中のみ
         </label>
       </div>
 
-      {loading && <p>読み込み中...</p>}
+      {loading && <p className="text-gray-500">読み込み中...</p>}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {submissions.map(s => (
@@ -101,7 +103,8 @@ function SortButton({ label, onClick, active }: { label: string; onClick?: () =>
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1 rounded border text-sm ${active ? 'bg-black text-white' : 'bg-white hover:bg-gray-100'}`}
+      className={`px-3 py-1 rounded border text-sm transition-colors duration-200
+        ${active ? 'bg-gray-700 text-white border-gray-700' : 'bg-gray-200 text-gray-700 border-gray-300 hover:bg-gray-300'}`}
     >
       {label}
     </button>

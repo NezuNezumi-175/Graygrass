@@ -152,16 +152,22 @@ export default function SubmissionCard(s: SubmissionProps) {
   }
 
   return (
-    <figure key={s?.id} className="border rounded overflow-hidden">
+    <figure key={s?.id} className="border border-gray-200 rounded overflow-hidden bg-gray-50 shadow-sm hover:shadow-md transition-shadow duration-200">
       {isVideo ? (
         <video src={url} controls className="w-full aspect-square object-cover bg-black" />
       ) : (
         <img src={url} alt="投稿" className="w-full aspect-square object-cover" />
       )}
-      <figcaption className="p-2 text-sm space-y-2">
-        <div className="flex items-start gap-3 p-2">
+      <figcaption className="p-3 text-sm space-y-3">
+        {/* ユーザー情報 */}
+        <div className="flex items-start gap-3">
           <Link href={`/user/${user?.id}`}>
-            <img src={user?.avatar_url || '/placeholder-avatar.png'} alt={user?.name ?? "avatar"} className="w-10 h-10 rounded-full object-cover" loading="lazy" />
+            <img
+              src={user?.avatar_url || '/placeholder-avatar.png'}
+              alt={user?.name ?? "avatar"}
+              className="w-10 h-10 rounded-full object-cover border border-gray-300"
+              loading="lazy"
+            />
           </Link>
           <div className="flex-1">
             <div className="flex justify-between items-start">
@@ -175,14 +181,16 @@ export default function SubmissionCard(s: SubmissionProps) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => onReaction(s?.id, "like")}
-            className="px-2 py-1 bg-blue-500 text-white rounded text-sm"
+            className={`px-2 py-1 rounded text-sm transition-colors duration-200 
+              ${doYouLike ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-blue-100'}`}
           >
             👍 {likeCount}
           </button>
 
           <button
             onClick={isFollowing ? handleUnfollow : handleFollow}
-            className={`px-2 py-1 rounded text-sm ${isFollowing ? 'bg-gray-300 text-black' : 'bg-green-500 text-white'}`}
+            className={`px-2 py-1 rounded text-sm transition-colors duration-200
+              ${isFollowing ? 'bg-gray-300 text-black hover:bg-gray-400' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
           >
             {isFollowing ? "フォロー中" : "フォロー"}
           </button>
@@ -199,11 +207,11 @@ export default function SubmissionCard(s: SubmissionProps) {
               placeholder="コメント..."
               value={commentInput}
               onChange={e => setCommentInput(e.target.value)}
-              className="flex-1 border rounded px-1 text-sm"
+              className="flex-1 border border-gray-300 rounded px-2 py-1 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-300"
             />
             <button
               onClick={() => onCommentSubmit(s?.id)}
-              className="px-2 bg-green-500 text-white rounded text-sm"
+              className="px-2 bg-blue-500 text-white rounded text-sm hover:bg-blue-600 transition-colors duration-200"
             >
               送信
             </button>
