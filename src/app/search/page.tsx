@@ -1,6 +1,7 @@
 'use client'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { connection } from 'next/server'
 import { useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
 
 interface UserResult {
   id: string
@@ -9,7 +10,8 @@ interface UserResult {
   avatar_url: string | null
 }
 
-export default function SearchPage() {
+export default async function SearchPage() {
+  await connection() // Ensure this is a server component
   const searchParams = useSearchParams()
   const router = useRouter()
   const query = searchParams.get('q') ?? ''
