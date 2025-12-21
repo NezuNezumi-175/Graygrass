@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
+import { connection } from 'next/server'
 import { useEffect, useState } from 'react'
 
 interface UserResult {
@@ -10,8 +11,9 @@ interface UserResult {
   avatar_url: string | null
 }
 
-export default function SearchPage() {
+export default async function SearchPage() {
   const searchParams = useSearchParams()
+  await connection()
   const router = useRouter()
   const query = searchParams.get('q') ?? ''
 
