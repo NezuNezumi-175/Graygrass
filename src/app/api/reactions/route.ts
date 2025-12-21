@@ -7,7 +7,7 @@ export async function POST(req: Request) {
 
     const { data, error } = await supabase
       .from('reactions')
-      .select('*')
+      .select('id, user_id, post_id, reaction')
       .eq('user_id', user_id)
       .eq('post_id', post_id)
       .eq('reaction', reaction)
