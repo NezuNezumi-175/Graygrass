@@ -4,14 +4,16 @@ type SortType = 'newest' | 'oldest' | 'user_name' | 'random' | 'reactions'
 
 type Submission = {
   id: string
+  user_id: string
   photo_url: string
   created_at: string
+  key?: string
 }
 
-async function getSortedSubmissions(eventId: string | null, sortType: SortType) {
+async function getSortedSubmissions(eventId: string | null, sortType: SortType): Promise<Submission[] | null> {
   const supabase = await createClient()
 
-  let query = supabase.from('submissions').select('id, photo_url, created_at')
+  let query = supabase.from('submissions').select('id, user_id, photo_url, created_at')
 
   if (eventId) {
     query = query.eq('event_id', eventId)

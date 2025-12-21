@@ -24,9 +24,10 @@ export default function Nav() {
               rounded-full font-extrabold text-7xl
               transition
               ${isActive('/feed')
-                ? 'bg-red-400 text-yellow-400'
-                : 'text-gray-400 hover:bg-gray-200/60'
+               ? 'bg-black text-white'
+               : 'text-gray-400 hover:bg-gray-200/60'
               }
+
             `}
           >
             ★
@@ -42,9 +43,10 @@ export default function Nav() {
               rounded-full font-extrabold text-6xl
               transition
               ${isActive('/capture')
-                ? 'bg-red-400 text-yellow-400'
-                : 'text-gray-400 hover:bg-gray-200/60'
-              }
+  ? 'bg-black text-white'
+  : 'text-gray-400 hover:bg-gray-200/60'
+}
+
             `}
           >
             ✚
@@ -83,7 +85,7 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
   }
 
   return (
-    <header className="fixed top-0 left-0 w-full h-14 bg-white flex items-center px-4 font-bold z-50">
+    <header className="fixed top-0 left-0 w-full h-14 bg-gray-200 flex items-center px-4 font-bold z-50">
       {!isLoginPage && (
         <>
           <button onClick={onMenuClick} className="text-xl">
@@ -102,14 +104,26 @@ export function TopHeader({ onMenuClick }: { onMenuClick: () => void }) {
         </>
       )}
 
-      <div className="absolute left-1/2 -translate-x-1/2">
-        <Link href="/" className="text-lg tracking-wide">
-          4Real.
-        </Link>
-      </div>
+      <div className="absolute left-1/2 -translate-x-1/2 z-30">
+  <Link
+    href="/"
+    className="
+     text-2xl font-extrabold tracking-wide
+      px-4 py-1
+      bg-white
+      rounded-full
+      hover:bg-black hover:text-white
+      transition
+    "
+  >
+    4Real.
+  </Link>
+</div>
+
+
 
       {!isLoginPage && (
-        <div className="ml-auto">
+        <div className="ml-auto relative z-20 focus-within:z-40">
           <div className="relative w-[220px] border border-gray-300 rounded-full bg-white">
             <input
               type="text"
@@ -143,11 +157,9 @@ export function LeftSidebar({
   const pathname = usePathname()
 
   const itemClass = (href: string) =>
-    `block px-4 py-3 font-bold transition
-     ${pathname === href
-      ? 'bg-red-400 text-yellow-400'
-      : 'text-gray-600 hover:bg-gray-200'
-    }`
+  `block px-4 py-3 mx-2 transition rounded-full
+   text-gray-600 hover:bg-gray-200
+   ${pathname === href ? 'font-extrabold' : 'font-bold'}`
 
   async function signOut() {
     const supabase = createClient()
@@ -159,13 +171,14 @@ export function LeftSidebar({
 
   return (
     <aside
-      className={`
-        fixed top-0 left-0 h-screen w-48 bg-white border-r z-40
-        transform transition-transform duration-300
-        ${open ? 'translate-x-0' : '-translate-x-full'}
-        overflow-y-auto
-      `}
-    >
+  className={`
+    fixed top-0 left-0 h-screen w-48
+    bg-white border-r z-40  
+    transform transition-transform duration-300
+    ${open ? 'translate-x-0' : '-translate-x-full'}
+    overflow-y-auto
+  `}
+>
       <nav className="pt-14 space-y-1">
         <Link href="/" className={itemClass('/')}>Home</Link>
         <Link href="/feed" className={itemClass('/feed')}>Feed</Link>
