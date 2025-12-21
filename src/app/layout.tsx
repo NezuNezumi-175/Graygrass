@@ -1,5 +1,3 @@
-"use client";
-
 import EnsureProfile from '@/components/EnsureProfile'
 import ClientLayout from './client-layout'
 import './globals.css'
