@@ -15,12 +15,13 @@ type SubmissionProps = {
 }
 
 export default function SubmissionCard(s: SubmissionProps) {
-  const supabase = createClient()
-  const [user, setUser] = useState<any>(null)
-  const [likeCount, setLikeCount] = useState(s.reactions?.length || 0)
-  const [comments, setComments] = useState(s?.comments || [])
-  const [userId, setUserId] = useState<string | null>(null)
-  const [commentInput, setCommentInput] = useState("")
+    const supabase = createClient()
+    const [user, setUser] = useState<any>(null)
+    const [likeCount, setLikeCount] = useState(s.reactions?.length || 0)
+    const [comments, setComments] = useState(s?.comments || [])
+    const [userId, setUserId] = useState<string | null>(null)
+    const [commentInput, setCommentInput] = useState("")
+    const [doYouLike, setDoYouLike] = useState(false)
 
 
     const url = s?.photo_url
@@ -54,6 +55,19 @@ export default function SubmissionCard(s: SubmissionProps) {
         })
     }, [s?.id])
 
+    // do you like?
+    useEffect(() => {
+        if (!userId) return
+        supabase
+            .from("reactions")
+            .select("*")
+            .eq("post_id", s?.id)
+            .eq("user_id", userId)
+            .then(({ data }) => {
+                setDoYouLike((data && data.length > 0) || false)
+            })
+    }, [s?.id, userId])
+
     // コメント取得
     useEffect(() => {
         supabase.from("comments").select("*").eq("post_id", s?.id).then(({ data }) => {
@@ -74,13 +88,14 @@ export default function SubmissionCard(s: SubmissionProps) {
                 console.error("Reaction POST failed:", await res.text())
                 return
             }
-            
-            // optimistic update
-            setLikeCount(prev => {
-              const hasReacted = s.reactions?.some(r => r.user_id === userId)
-              return hasReacted ? Math.max(prev - 1, 0) : prev + 1
-            })
-          
+
+            if (doYouLike) {
+                setLikeCount(prev => Math.max(prev - 1, 0))
+            } else {
+                setLikeCount(prev => prev + 1)
+            }
+            setDoYouLike(prev => !prev)
+
         } catch (err) {
             console.error("Reaction error:", err)
         }
